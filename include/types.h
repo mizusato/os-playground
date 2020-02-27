@@ -22,4 +22,8 @@ typedef signed long long    Int64;
 typedef unsigned long long  Uint64;
 typedef Uint64              Qword;
 
+typedef Int Bool;
+#define False 0
+#define True  1
+
 #endif
