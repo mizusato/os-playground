@@ -1,0 +1,4 @@
+/iso/boot/kernel.bin
+/temp/*
+!/temp/.gitkeep
+/bootable.iso
