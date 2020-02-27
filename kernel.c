@@ -1,9 +1,10 @@
 #include "include/types.h"
 #include "include/string.h"
 #include "include/system.h"
+#include "include/screen.h"
 
 Void Main() {
-  Byte* vidmem = (Byte*) 0xB8000;
-  vidmem[0] = 'C';
-  vidmem[1] = 0xA;
+  ClearScreen();
+  WriteScreenString(0, 0, StringFrom("Hello World"), YELLOW);
+  MoveCursor(3, 5);
 }

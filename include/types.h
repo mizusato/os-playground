@@ -15,6 +15,9 @@ typedef signed int      Int32;
 typedef unsigned int    Uint32;
 typedef Uint32          Dword;
 
+typedef Int32           Int;
+typedef Uint32          Size;
+
 typedef signed long long    Int64;
 typedef unsigned long long  Uint64;
 typedef Uint64              Qword;
