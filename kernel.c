@@ -1,8 +1,7 @@
-#include "include/types.h"
-#include "include/string.h"
-#include "include/system.h"
-#include "include/screen.h"
-#include "include/keyboard.h"
+#include "lib/types.h"
+#include "lib/string.h"
+#include "lib/vga.h"
+#include "lib/keyboard.h"
 
 Void Main() {
   ClearScreen();

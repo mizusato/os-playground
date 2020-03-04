@@ -22,4 +22,4 @@ typedef Int Bool;
 #define False 0
 #define True  1
 
-#endif
+#endif  // OS_TYPES_H

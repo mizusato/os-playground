@@ -1,12 +1,5 @@
-#ifndef OS_STRING_H
-#define OS_STRING_H
+#include "string.h"
 
-#include "types.h"
-
-typedef struct {
-  Size         length;
-  const Byte*  chars;
-} String;
 
 String StringFrom(const char* raw) {
   const char* ptr = raw;
@@ -18,6 +11,7 @@ String StringFrom(const char* raw) {
   String result = { length, (const Byte*)(raw) };
   return result;
 }
+
 
 String DecimalString(Size number, Byte* buf) {
   if (number == 0) {
@@ -46,5 +40,3 @@ String DecimalString(Size number, Byte* buf) {
   String result = { length, buf };
   return result;
 }
-
-#endif
