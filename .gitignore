@@ -2,3 +2,4 @@
 /temp/*
 !/temp/.gitkeep
 /bootable.iso
+/.ccls-cache

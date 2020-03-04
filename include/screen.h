@@ -1,6 +1,10 @@
 #ifndef OS_SCREEN_H
 #define OS_SCREEN_H
 
+#include "types.h"
+#include "system.h"
+#include "string.h"
+
 Byte* const VideoMemory = (Byte*) 0xB8000;
 
 const Size
@@ -42,10 +46,10 @@ Void WriteScreen(Size row, Size col, Byte content, Color color) {
 
 Void MoveCursor(Size row, Size col) {
   Word ptr = (((Word) row) * SCREEN_WIDTH) + ((Word) col);
-  OutPortB(0x3D4, 14);
-  OutPortB(0x3D5, (Byte) (ptr >> 8));
-  OutPortB(0x3D4, 15);
-  OutPortB(0x3D5, (Byte) ptr);
+  OutputByte(0x3D4, 14);
+  OutputByte(0x3D5, (Byte) (ptr >> 8));
+  OutputByte(0x3D4, 15);
+  OutputByte(0x3D5, (Byte) ptr);
 }
 
 Void WriteScreenString(Size row, Size col, String str, Color color) {
