@@ -5,9 +5,11 @@
 #include "io.h"
 #include "scancode.h"
 
+Void KeyboardInit();
+
 Bool KeyboardReady();
 
 Byte ReadKeyboard();
 
-
 #endif  // OS_KEYBOARD_H
+
