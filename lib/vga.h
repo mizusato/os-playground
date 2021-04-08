@@ -22,7 +22,7 @@ typedef enum {
   BRIGHT_MAGENTA = 0xD,
   YELLOW         = 0xE,
   WHITE          = 0xF
-} Color;
+} __attribute__ ((__packed__)) Color;
 
 Void ClearScreen();
 

@@ -20,10 +20,10 @@ Void HandleKeyboardInput() {
     Byte buf[100];
     Byte key = ReadKeyboard();
     if (key != 0) {
-      String str = DecimalString(key, buf);
-      ClearScreen();
-      WriteScreenString(0, 0, str, BRIGHT_CYAN);
-      WriteScreen(0, (str.length + 1), key, YELLOW);
+        String str = DecimalString(key, buf);
+        ClearScreen();
+        WriteScreenString(0, 0, str, BRIGHT_CYAN);
+        WriteScreen(0, (str.length + 1), key, YELLOW);
     }
     /* Send End of Interrupt (EOI) to master PIC */
     OutputByte(0x20, 0x20);
