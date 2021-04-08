@@ -25,17 +25,17 @@ Void IdtInit() {
     IdtLoad(&idt_pointer);
 }
 
-static Void IdtPointerInit() {
+Void IdtPointerInit() {
     idt_pointer.Limit = ((sizeof(IdtEntry) * IDT_SIZE) - 1);
     idt_pointer.Base = (Size) &idt_table;
 }
 
-static Void IdtLoad(IdtPointer* ptr_ptr) {
+Void IdtLoad(IdtPointer* ptr_ptr) {
     __asm__ __volatile__ ("lidt %0" :: "m"(*ptr_ptr));
     __asm__ __volatile__ ("sti");
 }
 
-static Void InitPIC() {
+Void InitPIC() {
     /* ICW1 - begin initialization */
     OutputByte(PIC_1_CTRL, 0x11);
     OutputByte(PIC_2_CTRL, 0x11);

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-options="-m32 -ffreestanding -fno-stack-protector"
+options="-Wall -m32 -O0 -fno-pie -ffreestanding -fno-stack-protector"
 
 nasm -f elf32 kernel.asm -o temp/kasm.o && \
 

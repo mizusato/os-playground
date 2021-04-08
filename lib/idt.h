@@ -19,9 +19,9 @@ typedef struct {
 Void IdtSetEntry(Size N, Size base, Word selector, Byte flags);
 Void IdtInit();
 
-static Void IdtPointerInit();
-static Void IdtLoad(IdtPointer* ptr_ptr);
-static Void InitPIC();
+Void IdtPointerInit();
+Void IdtLoad(IdtPointer* ptr_ptr);
+Void InitPIC();
 
 #endif  // OS_IDT_H
 
