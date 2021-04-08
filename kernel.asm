@@ -10,6 +10,8 @@ global start
 extern Main
 global keyboard_irq_handler
 extern HandleKeyboardInput
+global timer_irq_handler
+extern HandleTimer
 global heap_space:data
 global heap_info:data
 start:
@@ -36,6 +38,13 @@ keyboard_irq_handler:
     popad                  ; Restore all general purpose registers
     iretd                  ; IRET will restore required parts of EFLAGS
                            ;   including the direction flag
+
+timer_irq_handler:
+    pushad
+    cld
+    call HandleTimer
+    popad
+    iretd
 
 ; Macro to build a GDT descriptor entry
 %define MAKE_GDT_DESC(base, limit, access, flags) \

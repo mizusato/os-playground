@@ -8,7 +8,10 @@
 
 extern Void keyboard_irq_handler();
 
+extern Void timer_irq_handler();
+
 Void ShowHeapStatus();
+Void TimerInit();
 
 Void Main() {
     HeapInit();
@@ -18,7 +21,9 @@ Void Main() {
     MoveCursor(3, 4);
     IdtInit();
     IdtSetEntry(0x21, (Number) keyboard_irq_handler, 0x08, 0x8E);
+    IdtSetEntry(0x20, (Number) timer_irq_handler, 0x08, 0x8E);
     KeyboardInit();
+    TimerInit(18);
 }
 
 Void ShowHeapStatus() {
@@ -51,9 +56,36 @@ Void HandleKeyboardInput() {
         WriteChar(2, 4, key, YELLOW);
         WriteString(2, 6, s, BRIGHT_CYAN);
     }
+    HeapFree(chunk, 1);
     /* Send End of Interrupt (EOI) to master PIC */
     OutputByte(0x20, 0x20);
-    HeapFree(chunk, 1);
-    ShowHeapStatus();
+}
+
+Void HandleTimer() {
+    static Number counter = 0;
+    static Number display = 0;
+    static Byte buf[16];
+    if ((counter % 18) == 0) {
+        Color color = ComposeColor(YELLOW, MAGENTA);
+        Number row = 21;
+        Number col = 4;
+        String s = StringFrom("Timer: ");
+        WriteString(row, col, s, color);
+        col += s.length;
+        WriteString(row, col, StringFromNumber(display, buf), color);
+        ShowHeapStatus();
+        display += 1;
+    }
+    counter += 1;
+    /* Send End of Interrupt (EOI) to master PIC */
+    OutputByte(0x20, 0x20);
+}
+
+Void TimerInit(Number freq) {
+    Number divisor = ((65535 * 18) / freq);
+    OutputByte(0x43, 0x36);
+    OutputByte(0x40, (divisor & 0xff));
+    OutputByte(0x40, (divisor >> 8));
+    OutputByte(0x21, (InputByte(0x21) & 0xfe));
 }
 
