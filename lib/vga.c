@@ -24,6 +24,14 @@ Void ClearScreen() {
   }
 }
 
+Void ClearRow(Size row) {
+  Cell blank = { 0, ComposeColor(MAGENTA, GRAY) };
+  Size i;
+  for (i = 0; i < WIDTH; i += 1) {
+    DisplayBuffer[row*WIDTH + i] = blank;
+  }
+}
+
 
 Void WriteScreen(Size row, Size col, Byte content, Color color) {
   Cell cell = { content, color };

@@ -1,5 +1,4 @@
 #include "heap.h"
-#include "vga.h"
 
 typedef struct _HeapInfo {
     Size size;
@@ -8,9 +7,12 @@ typedef struct _HeapInfo {
 extern HeapInfo heap_info;
 extern Chunk heap_space[];
 Chunk* free_list;
+HeapStatus status;
 
-void HeapInit() {
+Void HeapInit() {
     Size n = (heap_info.size / sizeof(Chunk));
+    status.ChunksAvailable = n;
+    status.ChunksTotal = n;
     Size i;
     Chunk temp = { 0, 0 };
     Chunk* prev = &temp;
@@ -40,10 +42,11 @@ Chunk* HeapAllocate(Size n) {
     head->previous->next = tail->next;
     head->previous = 0;
     tail->next = 0;
+    status.ChunksAvailable -= n;
     return head;
 } 
 
-void HeapFree(Chunk* head, Size n) {
+Void HeapFree(Chunk* head, Size n) {
     if (n == 0) {
         return;
     }
@@ -58,5 +61,10 @@ void HeapFree(Chunk* head, Size n) {
     head->previous = free_list;
     list_next->previous = tail;
     tail->next = list_next;
+    status.ChunksAvailable += n;
+}
+
+HeapStatus HeapGetStatus() {
+    return status;
 }
 

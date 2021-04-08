@@ -13,8 +13,14 @@ struct _Chunk {
     Byte   data[56];
 } __attribute__((packed));
 
+typedef struct _HeapStatus {
+    Size  ChunksTotal;
+    Size  ChunksAvailable;
+} HeapStatus;
+
 void HeapInit();
 Chunk* HeapAllocate(Size n);
 void HeapFree(Chunk* head, Size n);
+HeapStatus HeapGetStatus();
 
 #endif  // OS_HEAP_H

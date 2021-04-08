@@ -28,6 +28,8 @@ Color ComposeColor(Color fg, Color bg);
 
 Void ClearScreen();
 
+Void ClearRow(Size row);
+
 Void WriteScreen(Size row, Size col, Byte content, Color color);
 
 Void MoveCursor(Size row, Size col);

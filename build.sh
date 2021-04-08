@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 options="-Wall -m32 -O0 -fno-pie -ffreestanding -fno-stack-protector"
 
