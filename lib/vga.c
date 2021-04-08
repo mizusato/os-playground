@@ -13,11 +13,11 @@ Cell* DisplayBuffer = (Cell*) 0xB8000;
 
 
 Color ComposeColor(Color fg, Color bg) {
-  return (bg << 4) | fg;
+  return (((bg & 7) << 4) | fg);
 }
 
 Void ClearScreen() {
-  Cell blank = { 0, ComposeColor(WHITE, WHITE) };
+  Cell blank = { 0, ComposeColor(MAGENTA, GRAY) };
   Size i;
   for (i = 0; i < WIDTH*HEIGHT; i += 1) {
     DisplayBuffer[i] = blank;

@@ -11,6 +11,7 @@ gcc -c kernel.c -o temp/kernel.c.o $options && \
 
 ld -m elf_i386 -T link.ld -o iso/boot/kernel.bin temp/kasm.o temp/*.c.o && \
 
-grub-mkrescue -o bootable.iso iso/ && \
+grub-mkrescue -o bootable.iso iso/
 
-qemu-system-x86_64 -kernel iso/boot/kernel.bin
+# QEMU is too slow (takes very long to boot)
+# qemu-system-x86_64 -enable-kvm -kernel iso/boot/kernel.bin

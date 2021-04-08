@@ -10,6 +10,8 @@ global start
 extern Main
 global keyboard_irq_handler
 extern HandleKeyboardInput
+global heap_space:data
+global heap_info:data
 start:
 	cli
 	lgdt [gdtr]                 ; Load our own GDT, the GDTR of Grub may be invalid
@@ -65,6 +67,16 @@ CODE32_SEL equ gdt32_code - gdt_start
 DATA32_SEL equ gdt32_data - gdt_start
 
 section .bss
-resb 8192                       ; 8KB for stack
+resb 8*1024  ; 8MiB for stack
 stack_space:
+resd 1
+heap_space:
+resb 64*1024*1024  ; 64MiB for heap
+ramfs_space:
+resb 32*1024*1024  ; 32MiB for ram disk
+
+section .data
+align 4
+heap_info:
+    dd ramfs_space - heap_space  ; SIZE
 

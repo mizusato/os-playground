@@ -14,7 +14,7 @@ typedef enum {
   MAGENTA = 0x5,
   BROWN   = 0x6,
   GRAY    = 0x7,
-  DARK_DRAY      = 0x8,
+  DARK_GRAY      = 0x8,
   BRIGHT_BLUE    = 0x9,
   BRIGHT_GREEN   = 0xA,
   BRIGHT_CYAN    = 0xB,
@@ -23,6 +23,8 @@ typedef enum {
   YELLOW         = 0xE,
   WHITE          = 0xF
 } __attribute__ ((__packed__)) Color;
+
+Color ComposeColor(Color fg, Color bg);
 
 Void ClearScreen();
 
