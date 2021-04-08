@@ -14,28 +14,30 @@ Void Main() {
     HeapInit();
     ClearScreen();
     ShowHeapStatus();
-    WriteScreenString(0, 0, StringFrom("Hello World"), ComposeColor(YELLOW, DARK_GRAY));
-    MoveCursor(3, 5);
+    WriteString(2, 4, StringFrom("Hello World"), ComposeColor(YELLOW, DARK_GRAY));
+    MoveCursor(3, 4);
     IdtInit();
-    IdtSetEntry(0x21, (Size) keyboard_irq_handler, 0x08, 0x8E);
+    IdtSetEntry(0x21, (Number) keyboard_irq_handler, 0x08, 0x8E);
     KeyboardInit();
 }
 
 Void ShowHeapStatus() {
-    Size row = 24;
-    Color color = ComposeColor(YELLOW, MAGENTA);
-    ClearRow(row);
     Chunk* chunk = HeapAllocate(1);
     Byte* buf = chunk->data;
+    Number row = 22;
+    Number col = 4;
+    String s;
+    Color color = ComposeColor(YELLOW, MAGENTA);
+    #define WRITE(str) \
+        s = (str); \
+        WriteString(row, col, s, color); \
+        col += s.length;
     HeapStatus status = HeapGetStatus();
-    String s = DecimalString(status.ChunksAvailable, buf);
-    WriteScreenString(row, 0, s, color);
-    Size col = s.length;
-    WriteScreenString(row, col, StringFrom("/"), color);
-    col += 1;
-    s = DecimalString(status.ChunksTotal, buf);
-    WriteScreenString(row, col, s, color);
-    col += s.length;
+    ClearRow(row);
+    WRITE(StringFrom("Heap Used Chunks: "));
+    WRITE(StringFromNumber(status.ChunksAvailable, buf));
+    WRITE(StringFrom("/"));
+    WRITE(StringFromNumber(status.ChunksTotal, buf));
     HeapFree(chunk, 1);
 }
 
@@ -44,10 +46,10 @@ Void HandleKeyboardInput() {
     Byte* buf = chunk->data;
     Byte key = ReadKeyboard();
     if (key != 0) {
-        String s = DecimalString(key, buf);
-        ClearRow(0);
-        WriteScreenString(0, 0, s, BRIGHT_CYAN);
-        WriteScreen(0, (s.length + 1), key, YELLOW);
+        String s = StringFromNumber(key, buf);
+        ClearRow(2);
+        WriteChar(2, 4, key, YELLOW);
+        WriteString(2, 6, s, BRIGHT_CYAN);
     }
     /* Send End of Interrupt (EOI) to master PIC */
     OutputByte(0x20, 0x20);

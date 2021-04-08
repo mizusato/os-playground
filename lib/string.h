@@ -4,13 +4,13 @@
 #include "types.h"
 
 typedef struct {
-  Size         length;
+  Number         length;
   const Byte*  chars;
 } String;
 
 String StringFrom(const char* raw);
 
-String DecimalString(Size number, Byte* buf);
+String StringFromNumber(Number number, Byte* buf);
 
 
 #endif  // OS_STRING_H

@@ -16,10 +16,12 @@ typedef unsigned int    Uint32;
 typedef Uint32          Dword;
 
 typedef Int32           Int;
-typedef Uint32          Size;
+typedef Uint32          Number;
 
 typedef Int Bool;
 #define False 0
 #define True  1
+
+#define Null  0
 
 #endif  // OS_TYPES_H

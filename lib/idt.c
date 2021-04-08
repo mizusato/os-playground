@@ -11,7 +11,7 @@
 static IdtEntry idt_table[IDT_SIZE];
 static IdtPointer idt_pointer;
 
-Void IdtSetEntry(Size N, Size base, Word selector, Byte flags) {
+Void IdtSetEntry(Number N, Number base, Word selector, Byte flags) {
     idt_table[N].OffsetLowerBits = base & 0xFFFF;
     idt_table[N].OffsetHigherBits = (base >> 16) & 0xFFFF;
     idt_table[N].Selector = selector;
@@ -27,7 +27,7 @@ Void IdtInit() {
 
 Void IdtPointerInit() {
     idt_pointer.Limit = ((sizeof(IdtEntry) * IDT_SIZE) - 1);
-    idt_pointer.Base = (Size) &idt_table;
+    idt_pointer.Base = (Number) &idt_table;
 }
 
 Void IdtLoad(IdtPointer* ptr_ptr) {

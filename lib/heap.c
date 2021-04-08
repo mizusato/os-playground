@@ -1,7 +1,7 @@
 #include "heap.h"
 
 typedef struct _HeapInfo {
-    Size size;
+    Number size;
 } __attribute__((packed)) HeapInfo;
 
 extern HeapInfo heap_info;
@@ -10,11 +10,11 @@ Chunk* free_list;
 HeapStatus status;
 
 Void HeapInit() {
-    Size n = (heap_info.size / sizeof(Chunk));
+    Number n = (heap_info.size / sizeof(Chunk));
     status.ChunksAvailable = n;
     status.ChunksTotal = n;
-    Size i;
-    Chunk temp = { 0, 0 };
+    Number i;
+    Chunk temp = { Null, Null };
     Chunk* prev = &temp;
     for (i = 0; i < n; i += 1) {
         Chunk* this = &heap_space[i];
@@ -27,12 +27,12 @@ Void HeapInit() {
     free_list->previous = last;
 }
 
-Chunk* HeapAllocate(Size n) {
+Chunk* HeapAllocate(Number n) {
     if (n == 0) {
-        return 0;
+        return Null;
     }
     Chunk* head = free_list;
-    Size i;
+    Number i;
     Chunk* this = head;
     for (i = 1; i <= (n - 1); i += 1) {
         this = this->next;
@@ -40,18 +40,18 @@ Chunk* HeapAllocate(Size n) {
     Chunk* tail = this;
     tail->next->previous = head->previous;
     head->previous->next = tail->next;
-    head->previous = 0;
-    tail->next = 0;
+    head->previous = Null;
+    tail->next = Null;
     status.ChunksAvailable -= n;
     return head;
 } 
 
-Void HeapFree(Chunk* head, Size n) {
+Void HeapFree(Chunk* head, Number n) {
     if (n == 0) {
         return;
     }
     Chunk* this = head;
-    Size i;
+    Number i;
     for (i = 1; i <= (n - 1); i += 1) {
         this = this->next;
     }

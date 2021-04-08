@@ -13,10 +13,10 @@ typedef struct {
 
 typedef struct {
     Word  Limit;
-    Size  Base;
+    Number  Base;
 } __attribute__((packed)) IdtPointer;
 
-Void IdtSetEntry(Size N, Size base, Word selector, Byte flags);
+Void IdtSetEntry(Number N, Number base, Word selector, Byte flags);
 Void IdtInit();
 
 Void IdtPointerInit();

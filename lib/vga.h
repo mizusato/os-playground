@@ -28,13 +28,13 @@ Color ComposeColor(Color fg, Color bg);
 
 Void ClearScreen();
 
-Void ClearRow(Size row);
+Void ClearRow(Number row);
 
-Void WriteScreen(Size row, Size col, Byte content, Color color);
+Void WriteChar(Number row, Number col, Byte content, Color color);
 
-Void MoveCursor(Size row, Size col);
+Void MoveCursor(Number row, Number col);
 
-Void WriteScreenString(Size row, Size col, String str, Color color);
+Void WriteString(Number row, Number col, String str, Color color);
 
 
 #endif  // OS_VGA_H

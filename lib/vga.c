@@ -18,28 +18,28 @@ Color ComposeColor(Color fg, Color bg) {
 
 Void ClearScreen() {
   Cell blank = { 0, ComposeColor(MAGENTA, GRAY) };
-  Size i;
+  Number i;
   for (i = 0; i < WIDTH*HEIGHT; i += 1) {
     DisplayBuffer[i] = blank;
   }
 }
 
-Void ClearRow(Size row) {
+Void ClearRow(Number row) {
   Cell blank = { 0, ComposeColor(MAGENTA, GRAY) };
-  Size i;
+  Number i;
   for (i = 0; i < WIDTH; i += 1) {
     DisplayBuffer[row*WIDTH + i] = blank;
   }
 }
 
 
-Void WriteScreen(Size row, Size col, Byte content, Color color) {
+Void WriteChar(Number row, Number col, Byte content, Color color) {
   Cell cell = { content, color };
   DisplayBuffer[row*WIDTH + col] = cell;
 }
 
 
-Void MoveCursor(Size row, Size col) {
+Void MoveCursor(Number row, Number col) {
   Word ptr = (((Word) row) * WIDTH) + ((Word) col);
   OutputByte(0x3D4, 14);
   OutputByte(0x3D5, (Byte) (ptr >> 8));
@@ -48,14 +48,14 @@ Void MoveCursor(Size row, Size col) {
 }
 
 
-Void WriteScreenString(Size row, Size col, String str, Color color) {
-  Size start = col;
-  Size i;
+Void WriteString(Number row, Number col, String str, Color color) {
+  Number start = col;
+  Number i;
   for (i = 0; i < str.length; i += 1) {
-    Size pos = start + i;
+    Number pos = start + i;
     if (pos >= WIDTH) {
       break;
     }
-    WriteScreen(row, pos, str.chars[i], color);
+    WriteChar(row, pos, str.chars[i], color);
   }
 }
