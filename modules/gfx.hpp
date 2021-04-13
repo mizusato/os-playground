@@ -13,6 +13,7 @@ public:
     static Shared<Screen> From(GraphicsInfo* gfx);
     Number Width() { return gfx.screenViewportWidth; };
     Number Height() { return gfx.screenHeight; };
+    void DrawString(Number x, Number y, const char* s);
 protected:
     Screen(GraphicsInfo* gfx): gfx(*gfx) {};
     GraphicsInfo gfx;

@@ -10,6 +10,7 @@ void Main(GraphicsInfo* gfxInfo) {
             screen->DrawPixel(x, y, 255, (x % 256), 64);
         }
     }
+    screen->DrawString(100, 100, "hello world");
     while(1) __asm__("hlt");
 }
 

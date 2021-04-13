@@ -1,5 +1,6 @@
 #include "../boot.h"
 #include "types.h"
+#include "font.hpp"
 #include "gfx.hpp"
 
 class ScreenInvalid final: public Screen {
@@ -35,6 +36,35 @@ Shared<Screen> Screen::From(GraphicsInfo* gfx) {
         return Shared<Screen>(new ScreenBGR(gfx));
     } else {
         return Shared<Screen>(new ScreenInvalid(gfx));
+    }
+}
+
+void Screen::DrawString(Number base_x, Number base_y, const char* s) {
+    Number w = 18;
+    Number h = 36;
+    Number i = 0;
+    while(*s != 0) {
+        char ch = *s;
+        Number n = (ch - 'a');
+        for (Number dy = 0; dy < h; dy += 1) {
+            const Number* row = &BasicFont[h*n+dy];
+            for (Number dx = 0; dx < w; dx += 1) {
+                Number x = base_x + (i * w) + dx;
+                Number y = base_y + dy;
+                Number offset = (w - dx - 1);
+                bool black = false;
+                if ('a' < ch && ch < 'z') {
+                    black = (*row & (1 << offset));
+                }
+                if (black) {
+                    this->DrawPixel(x, y, 0, 0, 0);
+                } else {
+                    this->DrawPixel(x, y, 0xFF, 0xFF, 0xFF);
+                }
+            }
+        }
+        i++;
+        s++;
     }
 }
 
