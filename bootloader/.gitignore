@@ -1,5 +1,0 @@
-build/*.o
-build/*.so
-build/NvVars
-build/EFI/BOOT/*.EFI
-!.gitkeep

@@ -1,5 +1,5 @@
-OUTPUT_FORMAT(elf32-i386)
-ENTRY(start)
+OUTPUT_FORMAT(elf64-x86-64)
+ENTRY(EntryPoint)
 SECTIONS {
     . = 0x100000;
     .text : { *(.text) }

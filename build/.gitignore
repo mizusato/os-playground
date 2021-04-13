@@ -1,0 +1,7 @@
+/objects/*.o
+/objects/*.elf
+/iso/EFI/BOOT/*.EFI
+/iso/kernel.bin
+/*.img
+/*.iso
+!.gitkeep

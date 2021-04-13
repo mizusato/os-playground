@@ -3,3 +3,4 @@
 !/temp/.gitkeep
 /bootable.iso
 /.ccls-cache
+/.vscode
