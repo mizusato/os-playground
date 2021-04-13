@@ -11,7 +11,7 @@ public:
     virtual void DrawPixel(Number x, Number y, Number r, Number g, Number b) = 0;
     virtual ~Screen() {};
     static Shared<Screen> From(GraphicsInfo* gfx);
-    Number Width() { return gfx.screenViewportWidth; };
+    Number Width()  { return gfx.screenViewportWidth; };
     Number Height() { return gfx.screenHeight; };
     void DrawString(Number x, Number y, const char* s);
 protected:

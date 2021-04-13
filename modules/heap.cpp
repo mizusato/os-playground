@@ -71,7 +71,7 @@ HeapStatus HeapGetStatus() {
     return status;
 }
 
-void* operator new (Number size) {
+void* operator new(Number size) {
     if (size > CHUNK_DATA_SIZE) { return nullptr; }
     return (void*) HeapAllocate(1);
 }

@@ -3,6 +3,7 @@
 #include "font.hpp"
 #include "gfx.hpp"
 
+
 class ScreenInvalid final: public Screen {
 public:
     ScreenInvalid(GraphicsInfo* gfx): Screen(gfx) {};
