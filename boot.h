@@ -1,6 +1,9 @@
 #ifndef BOOT_H
 #define BOOT_H
 
+#define HEAP_START 0x1000000  // 16M ~
+#define HEAP_SIZE 0x2000000  // 32M
+
 typedef enum {
     PF_Unsupported,
     PF_RGB,

@@ -1,14 +1,15 @@
 #include "boot.h"
-
-typedef unsigned int Number;
-typedef unsigned long Uint32;
+#include "modules/gfx.hpp"
 
 extern "C"
 void Main(GraphicsInfo* gfxInfo) {
-    for (Number i = 0; i < gfxInfo->screenHeight; i += 1) {
-        for (Number j = 0; j < gfxInfo->screenViewportWidth; j += 1) {
-            (gfxInfo->framebuffer)[(i * gfxInfo->screenBufferWidth) + j] = (0x99DD44CC + j*0x80);
+    HeapInit();
+    auto screen = Screen::From(gfxInfo);
+    for (Number y = 0; y < screen->Height(); y += 1) {
+        for (Number x = 0; x < screen->Width(); x += 1) {
+            screen->DrawPixel(x, y, 255, (x % 256), 64);
         }
     }
     while(1) __asm__("hlt");
 }
+

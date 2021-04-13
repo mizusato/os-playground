@@ -4,7 +4,7 @@ GNU_EFI_INCLUDE="/usr/include/efi"
 
 GNU_EFI_LIB="/usr/lib"
 
-gcc -I"$GNU_EFI_INCLUDE"/ -O0 -fpic \
+gcc -I"$GNU_EFI_INCLUDE"/ -O1 -fpic \
     -ffreestanding -fno-stack-protector -fno-stack-check \
     -fshort-wchar -mno-red-zone -maccumulate-outgoing-args \
     -c bootloader.c -o build/bootloader.o && \

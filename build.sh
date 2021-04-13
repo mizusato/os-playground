@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 IMG_SIZE=1 # * 4M
-CXX_OPTIONS="-Wall -g -std=c++11 -O0 -fno-pie "\
+CXX_OPTIONS="-Wall -g -std=c++11 -O1 -fno-pie "\
 " -ffreestanding -mno-red-zone -fno-exceptions -fno-rtti"\
 ""
 
