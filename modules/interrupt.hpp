@@ -23,7 +23,6 @@ namespace Interrupt {
     void Setup(Number N, Number base, Word selector, Byte flags);
     void Init();
     void Unmask(Number which);
-    void NotifyHandled();
 };
 
 extern "C" {

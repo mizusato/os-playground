@@ -33,9 +33,6 @@ namespace Interrupt {
         Byte mask = getInterruptMask();
         setInterruptMask(mask & (~(1 << which)));
     }
-    void NotifyHandled() {
-        OutputByte(PIC_1_CTRL, 0x20);
-    }
 }
 
 Byte getInterruptMask() {

@@ -73,6 +73,9 @@ KeyboardInterruptHandler:
     PUSHAQ
     cld
     call handleKeyboardInterrupt
+    mov rdi, 0x20
+    mov rsi, 0x20
+    call OutputByte
     POPAQ
     iretq
 
