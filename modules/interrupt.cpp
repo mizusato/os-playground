@@ -14,29 +14,28 @@ void setInterruptMask(Byte mask);
 InterruptDescriptor Idt[IDT_SIZE] = {0};
 InterruptTablePointer IdtPointer;
 
-void InterruptSetup(Number N, Number base, Word selector, Byte flags) {
-    Idt[N].Offset_0 = base & 0xFFFF;
-    Idt[N].Offset_16 = (base >> 16) & 0xFFFF;
-    Idt[N].Offset_32 = 0;
-    Idt[N].Selector = selector;
-    Idt[N].Flags = flags;
-}
-
-void InterruptInit() {
-    setupPIC();
-    IdtPointer.Limit = ((sizeof(InterruptDescriptor) * IDT_SIZE) - 1);
-    IdtPointer.Base = (Number) &Idt;
-    LoadInterruptTable(&IdtPointer);
-    SetInterruptFlag();
-}
-
-void InterruptUnmask(Number which) {
-    Byte mask = getInterruptMask();
-    setInterruptMask(mask & (~(1 << which)));
-}
-
-void InterruptNotifyHandled() {
-    OutputByte(PIC_1_CTRL, 0x20);
+namespace Interrupt {
+    void Setup(Number N, Number base, Word selector, Byte flags) {
+        Idt[N].Offset_0 = base & 0xFFFF;
+        Idt[N].Offset_16 = (base >> 16) & 0xFFFF;
+        Idt[N].Offset_32 = 0;
+        Idt[N].Selector = selector;
+        Idt[N].Flags = flags;
+    }
+    void Init() {
+        setupPIC();
+        IdtPointer.Limit = ((sizeof(InterruptDescriptor) * IDT_SIZE) - 1);
+        IdtPointer.Base = (Number) &Idt;
+        LoadInterruptTable(&IdtPointer);
+        SetInterruptFlag();
+    }
+    void Unmask(Number which) {
+        Byte mask = getInterruptMask();
+        setInterruptMask(mask & (~(1 << which)));
+    }
+    void NotifyHandled() {
+        OutputByte(PIC_1_CTRL, 0x20);
+    }
 }
 
 Byte getInterruptMask() {

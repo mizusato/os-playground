@@ -3,8 +3,10 @@
 
 #include "types.h"
 
-void KeyboardInit();
-Byte KeyboardReadInput();
+namespace Keyboard {
+    void Init();
+    Byte ReadInput();
+};
 
 extern "C" {
     void KeyboardInterruptHandler();

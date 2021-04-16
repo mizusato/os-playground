@@ -17,13 +17,15 @@ struct HeapStatus {
     Number  ChunksAvailable;
 };
 
-void HeapInit();
-Chunk* HeapAllocate(Number n);
-void HeapFree(Chunk* head, Number n);
-HeapStatus HeapGetStatus();
-
 void* operator new (Number size);
 void  operator delete (void* ptr);
+
+namespace Heap {
+    void Init();
+    Chunk* Allocate(Number n);
+    void Free(Chunk* head, Number n);
+    HeapStatus GetStatus();
+}
 
 #endif
 

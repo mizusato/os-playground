@@ -7,15 +7,17 @@
 
 class Screen {
 public:
-    virtual void DrawPixel(Number x, Number y, Number r, Number g, Number b) = 0;
+    static void Init(GraphicsInfo* gfx);
+    static Screen* Instance() { return instance; };
     virtual ~Screen() {};
-    static Screen* From(GraphicsInfo* gfx);
+    virtual void DrawPixel(Number x, Number y, Number r, Number g, Number b) = 0;
     Number Width()  { return gfx.screenViewportWidth; };
     Number Height() { return gfx.screenHeight; };
     void DrawString(Number x, Number y, const char* s);
 protected:
     Screen(GraphicsInfo* gfx): gfx(*gfx) {};
     GraphicsInfo gfx;
+    static Screen* instance;
 };
 
 #endif

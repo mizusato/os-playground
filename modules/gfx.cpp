@@ -4,6 +4,8 @@
 #include "gfx.hpp"
 
 
+Screen* Screen::instance = nullptr;
+
 class ScreenRGB final: public Screen {
 public:
     ScreenRGB(GraphicsInfo* gfx): Screen(gfx) {};
@@ -22,14 +24,17 @@ public:
     };
 };
 
-Screen* Screen::From(GraphicsInfo* gfx) {
+void Screen::Init(GraphicsInfo* gfx) {
+    if (Screen::instance != nullptr) {
+        delete Screen::instance;
+    }
     PixelFormat pf = gfx->pixelFormat;
     if (pf == PF_RGB) {
-        return new ScreenRGB(gfx);
+        Screen::instance = new ScreenRGB(gfx);
     } else if (pf == PF_BGR) {
-        return new ScreenBGR(gfx);
+        Screen::instance = new ScreenBGR(gfx);
     } else {
-        return nullptr;
+        Screen::instance = nullptr;
     }
 }
 
