@@ -4,13 +4,6 @@
 #include "gfx.hpp"
 
 
-class ScreenInvalid final: public Screen {
-public:
-    ScreenInvalid(GraphicsInfo* gfx): Screen(gfx) {};
-    ~ScreenInvalid() {}
-    void DrawPixel(Number x, Number y, Number r, Number g, Number b) override {};
-};
-
 class ScreenRGB final: public Screen {
 public:
     ScreenRGB(GraphicsInfo* gfx): Screen(gfx) {};
@@ -29,14 +22,14 @@ public:
     };
 };
 
-Shared<Screen> Screen::From(GraphicsInfo* gfx) {
+Screen* Screen::From(GraphicsInfo* gfx) {
     PixelFormat pf = gfx->pixelFormat;
     if (pf == PF_RGB) {
-        return Shared<Screen>(new ScreenRGB(gfx));
+        return new ScreenRGB(gfx);
     } else if (pf == PF_BGR) {
-        return Shared<Screen>(new ScreenBGR(gfx));
+        return new ScreenBGR(gfx);
     } else {
-        return Shared<Screen>(new ScreenInvalid(gfx));
+        return nullptr;
     }
 }
 
@@ -54,7 +47,7 @@ void Screen::DrawString(Number base_x, Number base_y, const char* s) {
                 Number y = base_y + dy;
                 Number offset = (w - dx - 1);
                 bool black = false;
-                if ('a' < ch && ch < 'z') {
+                if ('a' <= ch && ch <= 'z') {
                     black = (*row & (1 << offset));
                 }
                 if (black) {

@@ -22,8 +22,8 @@ Chunk* HeapAllocate(Number n);
 void HeapFree(Chunk* head, Number n);
 HeapStatus HeapGetStatus();
 
-void* operator new(Number size);
-void  operator delete(void* ptr);
+void* operator new (Number size);
+void  operator delete (void* ptr);
 
 #endif
 

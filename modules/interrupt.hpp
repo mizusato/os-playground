@@ -1,0 +1,33 @@
+#ifndef INTERRUPT_HPP
+#define INTERRUPT_HPP
+
+#include "types.h"
+
+
+struct InterruptDescriptor {
+    Word   Offset_0;
+    Word   Selector;
+    Byte   _;
+    Byte   Flags;
+    Word   Offset_16;
+    Dword  Offset_32;
+    Dword  __;
+} __attribute__((packed));
+
+struct InterruptTablePointer {
+    Word    Limit;
+    Number  Base;
+} __attribute__((packed));
+
+void InterruptSetup(Number N, Number base, Word selector, Byte flags);
+void InterruptInit();
+void InterruptUnmask(Number which);
+void InterruptNotifyHandled();
+
+extern "C" {
+    void SetInterruptFlag();
+    void ClearInterruptFlag();
+    void LoadInterruptTable(InterruptTablePointer*);
+}
+
+#endif
