@@ -5,7 +5,7 @@ global EntryPoint
 extern Main
 EntryPoint:
     cli
-    lgdt [gdtr]
+    lgdt [GDT_POINTER]
     push rbp
     mov rbp, rsp
     mov rax, .setcs
@@ -99,7 +99,7 @@ GDT_2_DATA:
     ; 64-bit data, 4kb gran, limit 0xffffffff bytes, base=0
 GDT_END:
 
-gdtr:
+GDT_POINTER:
     dw GDT_END - GDT_0_NULL - 1  ; limit (Size of GDT - 1)
     dd GDT_0_NULL  ; base of GDT
 

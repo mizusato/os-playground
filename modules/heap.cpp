@@ -12,6 +12,7 @@ Chunk* free_list;
 HeapStatus status;
 
 void* operator new (Number size) {
+    // TODO: check if there are chunks available
     if (size > CHUNK_DATA_SIZE) { return nullptr; }
     return (void*) Heap::Allocate(1);
 }
@@ -53,8 +54,8 @@ namespace Heap {
         tail->next->previous = head->previous;
         head->previous->next = tail->next;
         free_list = tail->next;
-        head->previous = nullptr;
-        tail->next = nullptr;
+        head->previous = tail;
+        tail->next = head;
         status.ChunksAvailable -= n;
         return head;
     } 
