@@ -48,7 +48,7 @@ private:
 public:
     List() {
         static_assert(sizeof(T) < CHUNK_DATA_SIZE, "List: element too big");
-        if (2*sizeof(T) < CHUNK_DATA_SIZE) {
+        if (2*sizeof(T) <= CHUNK_DATA_SIZE) {
             elementPerChunk = (CHUNK_DATA_SIZE / sizeof(T));
         } else {
             elementPerChunk = 1;
