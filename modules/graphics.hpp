@@ -3,6 +3,7 @@
 
 #include "../boot.h"
 #include "types.h"
+#include "string.hpp"
 
 
 namespace Graphics {
@@ -10,7 +11,7 @@ namespace Graphics {
     Number ScreenWidth();
     Number ScreenHeight();
     void DrawPixel(Number x, Number y, Number r, Number g, Number b);
-    void DrawString(Number base_x, Number base_y, const char* s);
+    void DrawString(Number base_x, Number base_y, String str);
 };
 
 class Screen {

@@ -1,16 +1,13 @@
+#ifndef LIST_HPP
+#define LIST_HPP
+
 #include "heap.hpp"
 #include "unique.hpp"
 
+
 template <typename T>
 class List {
-private:
-    Number elementPerChunk;
-    Number numberOfChunks;
-    Chunk* head;
-    struct ChunkData {
-        Number elementAmount;
-        T elements[];
-    };
+public:
     class Iterator {
     private:
         const List* list = nullptr;
@@ -44,6 +41,14 @@ private:
                 }
             }
         }
+    };
+private:
+    Number elementPerChunk;
+    Number numberOfChunks;
+    Chunk* head;
+    struct ChunkData {
+        Number elementAmount;
+        T elements[];
     };
 public:
     List() {
@@ -125,4 +130,6 @@ public:
         another->numberOfChunks = 0;
     }
 };
+
+#endif
 

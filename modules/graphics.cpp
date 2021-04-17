@@ -1,5 +1,4 @@
 #include "../boot.h"
-#include "types.h"
 #include "font.hpp"
 #include "graphics.hpp"
 
@@ -46,12 +45,12 @@ namespace Graphics {
     void DrawPixel(Number x, Number y, Number r, Number g, Number b) {
         screen->DrawPixel(x, y, r, g, b);
     }
-    void DrawString(Number base_x, Number base_y, const char* s) {
+    void DrawString(Number base_x, Number base_y, String str) {
         Number w = 18;
         Number h = 36;
         Number i = 0;
-        while(*s != 0) {
-            char ch = *s;
+        for (auto it = str.Iterate(); it->NotEmpty(); it->Shift()) {
+            char ch = it->CurrentChar();
             Number n = (ch - 'a');
             for (Number dy = 0; dy < h; dy += 1) {
                 const Number* row = &BasicFont[h*n+dy];
@@ -71,7 +70,6 @@ namespace Graphics {
                 }
             }
             i++;
-            s++;
         }
     }
 };

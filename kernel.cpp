@@ -29,7 +29,7 @@ void Main(GraphicsInfo* gfxInfo) {
     char ch = 0;
     for (auto it = l.Iterate(); it->HasValue(); it->Proceed()) {
         Number n = it->Value();
-        ch = 'a' + static_cast<char>(n);
+        ch = 'g' + static_cast<char>(n);
         char str[2] = { ch, 0 };
         Graphics::DrawString(200, 100+100*n, str);
     }
