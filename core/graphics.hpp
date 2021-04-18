@@ -1,5 +1,5 @@
-#ifndef GFX_HPP
-#define GFX_HPP
+#ifndef GRAPHICS_HPP
+#define GRAPHICS_HPP
 
 #include "../boot.h"
 #include "types.h"
@@ -14,15 +14,5 @@ namespace Graphics {
     void DrawString(Number base_x, Number base_y, const String& str);
 };
 
-class Screen {
-public:
-    virtual ~Screen() {};
-    virtual void DrawPixel(Number x, Number y, Number r, Number g, Number b) = 0;
-    Number Width()  { return gfxInfo.screenViewportWidth; };
-    Number Height() { return gfxInfo.screenHeight; };
-protected:
-    Screen(GraphicsInfo* gfxInfo): gfxInfo(*gfxInfo) {};
-    GraphicsInfo gfxInfo;
-};
-
 #endif
+

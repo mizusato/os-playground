@@ -3,6 +3,17 @@
 #include "graphics.hpp"
 
 
+class Screen {
+public:
+    virtual ~Screen() {};
+    virtual void DrawPixel(Number x, Number y, Number r, Number g, Number b) = 0;
+    Number Width()  { return gfxInfo.screenViewportWidth; };
+    Number Height() { return gfxInfo.screenHeight; };
+protected:
+    Screen(GraphicsInfo* gfxInfo): gfxInfo(*gfxInfo) {};
+    GraphicsInfo gfxInfo;
+};
+
 class ScreenRGB final: public Screen {
 public:
     ScreenRGB(GraphicsInfo* gfxInfo): Screen(gfxInfo) {};
@@ -46,8 +57,8 @@ namespace Graphics {
         screen->DrawPixel(x, y, r, g, b);
     }
     void DrawString(Number base_x, Number base_y, const String& str) {
-        // NOTE: using a reference to `str` to avoid RC operations
-        //       to prevent unintended problems when displaying panic messages
+        // NOTE: using a reference to `str` to avoid RC operations,
+        //       in order to prevent OOM problems when displaying panic messages
         Number w = BASIC_FONT_WIDTH;
         Number h = BASIC_FONT_HEIGHT;
         Number i = 0;
