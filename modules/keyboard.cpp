@@ -5,6 +5,8 @@
 
 const Byte ScanCodeMap[] = { SCANCODE_ASCII_TABLE };
 
+extern "C" void KeyboardInterruptHandler();
+
 namespace Keyboard {
     void Init() {
         Interrupt::Setup(0x21, (Number) KeyboardInterruptHandler, 0x08, 0x8E);

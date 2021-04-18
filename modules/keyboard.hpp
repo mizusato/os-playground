@@ -9,7 +9,6 @@ namespace Keyboard {
 };
 
 extern "C" {
-    void KeyboardInterruptHandler();
     void handleKeyboardInterrupt();
 }
 

@@ -13,6 +13,9 @@ void setInterruptMask(Byte mask);
 
 InterruptDescriptor Idt[IDT_SIZE] = {0};
 InterruptTablePointer IdtPointer;
+extern "C" {
+    void LoadInterruptTable(InterruptTablePointer*);
+}
 
 namespace Interrupt {
     void Setup(Number N, Number base, Word selector, Byte flags) {

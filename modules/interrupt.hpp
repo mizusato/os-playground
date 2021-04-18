@@ -28,7 +28,6 @@ namespace Interrupt {
 extern "C" {
     void SetInterruptFlag();
     void ClearInterruptFlag();
-    void LoadInterruptTable(InterruptTablePointer*);
 }
 
 #endif

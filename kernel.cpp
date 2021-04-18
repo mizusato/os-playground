@@ -2,12 +2,14 @@
 #include "modules/heap.hpp"
 #include "modules/graphics.hpp"
 #include "modules/interrupt.hpp"
+#include "modules/panic.hpp"
 #include "modules/keyboard.hpp"
 #include "modules/list.hpp"
 
 
 extern "C" {
     void Main(GraphicsInfo* gfxInfo);
+    void handlePanicInterrupt();
     void handleKeyboardInterrupt();
 }
 void DrawBackground();
@@ -16,6 +18,7 @@ void Main(GraphicsInfo* gfxInfo) {
     Heap::Init();
     Graphics::Init(gfxInfo);
     Interrupt::Init();
+    Panic::Init();
     Keyboard::Init();
     DrawBackground();
     Byte stub[] = "stub";
@@ -41,6 +44,11 @@ void Main(GraphicsInfo* gfxInfo) {
         Graphics::DrawString(200, 100+100*n, str);
     }
     while(1) __asm__("hlt");
+}
+
+void handlePanicInterrupt() {
+    Graphics::DrawString(150, 150, Panic::GetMessageTitle());
+    Graphics::DrawString(150, 186, Panic::GetMessageDetail());
 }
 
 void handleKeyboardInterrupt() {

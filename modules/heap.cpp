@@ -1,4 +1,5 @@
 #include "../boot.h"
+#include "panic.hpp"
 #include "heap.hpp"
 
 
@@ -12,8 +13,9 @@ Chunk* free_list;
 HeapStatus status;
 
 void* operator new (Number size) {
-    // TODO: check if there are chunks available
-    if (size > CHUNK_DATA_SIZE) { return nullptr; }
+    if (size > CHUNK_DATA_SIZE) {
+        panic("operator new: object too big");
+    }
     return (void*) Heap::Allocate(1);
 }
 
@@ -42,7 +44,10 @@ namespace Heap {
     }
     Chunk* Allocate(Number n) {
         if (n == 0) {
-            return nullptr;
+            panic("Heap::Allocate(): invalid argument");
+        }
+        if (status.ChunksAvailable < n) {
+            panic("Heap::Allocate(): out of memory");
         }
         Chunk* head = free_list;
         Chunk* current = head;
@@ -61,7 +66,7 @@ namespace Heap {
     } 
     void Free(Chunk* head, Number n) {
         if (n == 0) {
-            return;
+            panic("Heap::Free(): invalid argument");
         }
         Chunk* current = head;
         for (Number i = 1; i <= (n - 1); i += 1) {

@@ -3,6 +3,7 @@
 
 #include "heap.hpp"
 #include "unique.hpp"
+#include "panic.hpp"
 
 
 template <typename T>
@@ -21,12 +22,12 @@ public:
             return (current != nullptr);
         }
         T Value() const {
-            // TODO: check if HasValue(), if not, panic
+            if (!(HasValue())) { panic("invalid iterator usage"); }
             const ChunkData* data = reinterpret_cast<const ChunkData*>(&(current->data));
             return data->elements[innerIndex];
         }
         void Proceed() {
-            // TODO: check if HasValue(), if not, panic
+            if (!(HasValue())) { panic("invalid iterator usage"); }
             const ChunkData* data = reinterpret_cast<const ChunkData*>(&(current->data));
             if ((innerIndex + 1) < data->elementAmount) {
                 innerIndex += 1;

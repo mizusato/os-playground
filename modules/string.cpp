@@ -1,3 +1,4 @@
+#include "panic.hpp"
 #include "string.hpp"
 
 
@@ -48,10 +49,11 @@ bool LegacyString::Iterator::NotEmpty() const {
     return (data != nullptr && *data != 0);
 }
 Char LegacyString::Iterator::CurrentChar() const {
-    // TODO: check, panic if empty
+    if (!(NotEmpty())) { panic("invalid iterator usage"); }
     return static_cast<Char>(*data);
 }
 void LegacyString::Iterator::Shift() {
+    if (!(NotEmpty())) { panic("invalid iterator usage"); }
     data++;
 }
 

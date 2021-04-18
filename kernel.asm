@@ -70,6 +70,7 @@ LoadInterruptTable:
 global KeyboardInterruptHandler
 extern handleKeyboardInterrupt
 KeyboardInterruptHandler:
+    cli
     PUSHAQ
     cld
     call handleKeyboardInterrupt
@@ -77,7 +78,16 @@ KeyboardInterruptHandler:
     mov rsi, 0x20
     call OutputByte
     POPAQ
+    sti
     iretq
+
+global PanicInterruptHandler
+extern handlePanicInterrupt
+PanicInterruptHandler:
+    cli
+    cld
+    call handlePanicInterrupt
+    hlt
 
 ; Macro to build a GDT descriptor entry
 %define MAKE_GDT_DESC(base, limit, access, flags) \
