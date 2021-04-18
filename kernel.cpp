@@ -1,10 +1,10 @@
 #include "boot.h"
-#include "modules/heap.hpp"
-#include "modules/graphics.hpp"
-#include "modules/interrupt.hpp"
-#include "modules/panic.hpp"
-#include "modules/keyboard.hpp"
-#include "modules/list.hpp"
+#include "core/heap.hpp"
+#include "core/graphics.hpp"
+#include "core/interrupt.hpp"
+#include "core/panic.hpp"
+#include "core/keyboard.hpp"
+#include "core/list.hpp"
 
 
 extern "C" {
@@ -37,8 +37,8 @@ void Main(GraphicsInfo* gfxInfo) {
     l2->Append(5);
     l.AppendAll(std::move(l2));
     char ch = 0;
-    for (auto it = l.Iterate(); it->HasValue(); it->Proceed()) {
-        Number n = it->Value();
+    for (auto it = l.Iterate(); it->HasCurrent(); it->Proceed()) {
+        Number n = it->Current();
         ch = 'g' + static_cast<char>(n);
         char str[2] = { ch, 0 };
         Graphics::DrawString(200, 100+100*n, str);

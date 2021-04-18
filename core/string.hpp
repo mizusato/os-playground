@@ -22,9 +22,9 @@ public:
     class Iterator {
     public:
         virtual ~Iterator() {};
-        virtual bool NotEmpty() const = 0;
-        virtual Char CurrentChar() const = 0;
-        virtual void Shift() = 0;
+        virtual bool HasCurrent() const = 0;
+        virtual Char Current() const = 0;
+        virtual void Proceed() = 0;
     };
     class Impl {
     public:
@@ -51,9 +51,9 @@ public:
     public:
         Iterator(const char* data): data(data) {};
         ~Iterator() {};
-        bool NotEmpty() const override;
-        Char CurrentChar() const override;
-        void Shift() override;
+        bool HasCurrent() const override;
+        Char Current() const override;
+        void Proceed() override;
     };
 private:
     const char* const data;
@@ -71,9 +71,9 @@ public:
     public:
         Iterator(Unique<List<Char>::Iterator> iterator): iterator(std::move(iterator)) {};
         ~Iterator() {};
-        bool NotEmpty() const override;
-        Char CurrentChar() const override;
-        void Shift() override;
+        bool HasCurrent() const override;
+        Char Current() const override;
+        void Proceed() override;
     };
 private:
     Unique<List<Char>> list;

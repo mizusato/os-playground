@@ -8,34 +8,34 @@ extern "C" {
 }
 
 namespace Panic {
-    struct MessageType {
+    struct Message {
         String title;
         String detail;
-        MessageType(String title, String detail): title(title), detail(detail) {};
+        Message(String title, String detail): title(title), detail(detail) {};
     };
-    MessageType* Message;
-    char DetailBuffer[256] = {0};
+    Message* message;
+    char detailBuffer[256] = {0};
     void Init() {
         String title = "kernel panic";
-        String detail = DetailBuffer;
-        Message = new MessageType(title, detail);
+        String detail = detailBuffer;
+        message = new Message(title, detail);
         Interrupt::Setup(0x77, (Number) PanicInterruptHandler, 0x08, 0x8E);
     }
     const String& GetMessageTitle() {
-        return Message->title;
+        return message->title;
     }
     const String& GetMessageDetail() {
-        return Message->detail;
+        return message->detail;
     }
 }
 
 void panic(const char* detail) {
     Number i = 0;
     for (const char* ch = detail; (ch != nullptr && *ch != 0 && i < 255); ch += 1) {
-        Panic::DetailBuffer[i] = *ch;
+        Panic::detailBuffer[i] = *ch;
         i += 1;
     }
-    Panic::DetailBuffer[i] = 0;
+    Panic::detailBuffer[i] = 0;
     __asm__("int $0x77");
 }
 

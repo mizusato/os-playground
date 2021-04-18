@@ -34,8 +34,8 @@ String String::Hex(Number n) {
 }
 
 void String::Builder::Write(String s) {
-    for (auto it = s.Iterate(); it->NotEmpty(); it->Shift()) {
-        buf->Append(it->CurrentChar());
+    for (auto it = s.Iterate(); it->HasCurrent(); it->Proceed()) {
+        buf->Append(it->Current());
     }
 }
 String String::Builder::Collect() {
@@ -45,28 +45,28 @@ String String::Builder::Collect() {
 Unique<String::Iterator> LegacyString::Iterate() const {
     return Unique<String::Iterator>(new LegacyString::Iterator(data));
 }
-bool LegacyString::Iterator::NotEmpty() const {
+bool LegacyString::Iterator::HasCurrent() const {
     return (data != nullptr && *data != 0);
 }
-Char LegacyString::Iterator::CurrentChar() const {
-    if (!(NotEmpty())) { panic("invalid iterator usage"); }
+Char LegacyString::Iterator::Current() const {
+    if (!(HasCurrent())) { panic("invalid iterator usage"); }
     return static_cast<Char>(*data);
 }
-void LegacyString::Iterator::Shift() {
-    if (!(NotEmpty())) { panic("invalid iterator usage"); }
+void LegacyString::Iterator::Proceed() {
+    if (!(HasCurrent())) { panic("invalid iterator usage"); }
     data++;
 }
 
 Unique<String::Iterator> ListString::Iterate() const {
     return Unique<String::Iterator>(new ListString::Iterator(list->Iterate()));
 }
-bool ListString::Iterator::NotEmpty() const {
-    return iterator->HasValue();
+bool ListString::Iterator::HasCurrent() const {
+    return iterator->HasCurrent();
 }
-Char ListString::Iterator::CurrentChar() const {
-    return iterator->Value();
+Char ListString::Iterator::Current() const {
+    return iterator->Current();
 }
-void ListString::Iterator::Shift() {
+void ListString::Iterator::Proceed() {
     iterator->Proceed();
 }
 

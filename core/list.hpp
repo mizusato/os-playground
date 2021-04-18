@@ -18,16 +18,16 @@ public:
         friend class List;
     public:
         ~Iterator() {}
-        bool HasValue() const {
+        bool HasCurrent() const {
             return (current != nullptr);
         }
-        T Value() const {
-            if (!(HasValue())) { panic("invalid iterator usage"); }
+        T Current() const {
+            if (!(HasCurrent())) { panic("invalid iterator usage"); }
             const ChunkData* data = reinterpret_cast<const ChunkData*>(&(current->data));
             return data->elements[innerIndex];
         }
         void Proceed() {
-            if (!(HasValue())) { panic("invalid iterator usage"); }
+            if (!(HasCurrent())) { panic("invalid iterator usage"); }
             const ChunkData* data = reinterpret_cast<const ChunkData*>(&(current->data));
             if ((innerIndex + 1) < data->elementAmount) {
                 innerIndex += 1;
