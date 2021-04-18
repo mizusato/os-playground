@@ -5,7 +5,6 @@
 #include "types.h"
 #include "string.hpp"
 
-
 namespace Graphics {
     void Init(GraphicsInfo* gfxInfo);
     Number ScreenWidth();

@@ -7,3 +7,4 @@ typedef unsigned int Dword;
 typedef unsigned long int Number;
 
 #endif
+

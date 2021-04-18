@@ -1,4 +1,8 @@
+#ifndef UNIQUE_HPP
+#define UNIQUE_HPP
+
 #include <utility>
+
 
 template <typename T>
 class Unique {
@@ -28,4 +32,6 @@ public:
     T* operator -> () const { return ptr; };
     T* get() const { return ptr; };
 };
+
+#endif
 
