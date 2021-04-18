@@ -1,10 +1,42 @@
 #include "font.hpp"
 
 
-// Basic Font
+namespace BasicFont {
+
+extern const Number Data[];
+
+const Number* GetCharData(char ch) {
+    static const char* SymbolMapping = ":*/#()?!\"'+-~";
+    Number index;
+    bool found = false;
+    if ('a' <= ch && ch <= 'z') {
+        index = (ch - 'a');
+        found = true;
+    } else if ('0' <= ch && ch <= '9') {
+        index = 26 + (ch - '0');
+        found = true;
+    } else {
+        Number i = 0;
+        for (const char* sym = SymbolMapping; *sym != 0; sym += 1) {
+            if (*sym == ch) {
+                index = 36 + i;
+                found = true;
+                break;
+            }
+            i += 1;
+        }
+    }
+    if (found) {
+        return &Data[BASIC_FONT_HEIGHT * index];
+    } else {
+        return nullptr;
+    }
+}
+
+// Basic Font Data
 // COPYRIGHT INFO: converted from some characters of "Source Code Pro"
 
-const Number BasicFont[] = {
+const Number Data[] = {
 
 0b000000000000000000,
 0b000000000000000000,
@@ -1820,4 +1852,6 @@ const Number BasicFont[] = {
 0b000000000000000000,
 
 };
+
+}
 

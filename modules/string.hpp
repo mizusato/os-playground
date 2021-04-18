@@ -10,6 +10,15 @@ typedef Dword Char;
 
 class String final {
 public:
+    class Builder {
+    private:
+        Unique<List<Char>> buf;
+    public:
+        Builder(): buf(Unique<List<Char>>(new List<Char>())) {};
+        virtual ~Builder() {};
+        void Write(String s);
+        String Collect();
+    };
     class Iterator {
     public:
         virtual ~Iterator() {};
@@ -27,9 +36,11 @@ private:
     String(Shared<Impl> impl): impl(impl) {};
 public:
     ~String() {};
+    String(Char ch);
     String(const char* data);
     String(Unique<List<Char>> list);
     Unique<Iterator> Iterate() const { return impl->Iterate(); };
+    static String Hex(Number n);
 };
 
 class LegacyString final: public String::Impl {

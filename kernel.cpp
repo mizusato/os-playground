@@ -18,6 +18,13 @@ void Main(GraphicsInfo* gfxInfo) {
     Interrupt::Init();
     Keyboard::Init();
     DrawBackground();
+    Byte stub[] = "stub";
+    {
+        String::Builder buf;
+        buf.Write("stub address: 0x");
+        buf.Write(String::Hex((Number) &stub));
+        Graphics::DrawString(400, 100, buf.Collect());
+    }
     List<Number> l;
     l.Append(1);
     l.Append(2);

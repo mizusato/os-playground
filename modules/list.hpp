@@ -60,7 +60,10 @@ public:
         }
         numberOfChunks = 0;
         head = nullptr;
-    };
+    }
+    List(T one): List() {
+        Append(one);
+    }
     virtual ~List() {
         if (head != nullptr) {
             Chunk* current = head;
@@ -73,7 +76,7 @@ public:
             }
             Heap::Free(head, numberOfChunks);
         }
-    };
+    }
     bool NotEmpty() const {
         return (head != nullptr);
     }

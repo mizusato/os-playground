@@ -46,21 +46,20 @@ namespace Graphics {
         screen->DrawPixel(x, y, r, g, b);
     }
     void DrawString(Number base_x, Number base_y, String str) {
-        Number w = 18;
-        Number h = 36;
+        Number w = BASIC_FONT_WIDTH;
+        Number h = BASIC_FONT_HEIGHT;
         Number i = 0;
         for (auto it = str.Iterate(); it->NotEmpty(); it->Shift()) {
             char ch = it->CurrentChar();
-            Number n = (ch - 'a');
             for (Number dy = 0; dy < h; dy += 1) {
-                const Number* row = &BasicFont[h*n+dy];
+                const Number* data = BasicFont::GetCharData(ch);
                 for (Number dx = 0; dx < w; dx += 1) {
                     Number x = base_x + (i * w) + dx;
                     Number y = base_y + dy;
                     Number offset = (w - dx - 1);
                     bool black = false;
-                    if ('a' <= ch && ch <= 'z') {
-                        black = (*row & (1 << offset));
+                    if (data != nullptr) {
+                        black = (data[dy] & (1 << offset));
                     }
                     if (black) {
                         DrawPixel(x, y, 0, 0, 0);
