@@ -13,7 +13,7 @@ namespace Keyboard {
         Interrupt::Unmask(1);
     }
     Byte ReadInput() {
-        Number raw = (Number) InputByte(0x60);
+        Byte raw = InputByte(0x60);
         return ScanCodeMap[raw];
     }
 }

@@ -53,8 +53,13 @@ void handlePanicInterrupt() {
 
 void handleKeyboardInterrupt() {
     Byte key = Keyboard::ReadInput();
-    char str[2] = { key, 0 };
-    Graphics::DrawString(100, 150, str);
+    if (key == 0) { return; }
+    String::Builder buf;
+    buf.Write(key);
+    buf.Write(' ');
+    buf.Write(String::Hex(key));
+    Graphics::DrawString(100, 150, "    ");
+    Graphics::DrawString(100, 150, buf.Collect());
 }
 
 void DrawBackground() {
