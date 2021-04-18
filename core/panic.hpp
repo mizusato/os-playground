@@ -5,8 +5,8 @@ class String;
 
 namespace Panic {
     void Init();
-    const String& GetMessageTitle();
-    const String& GetMessageDetail();
+    String GetMessageTitle();
+    String GetMessageDetail();
 }
 
 void panic(const char* msg);

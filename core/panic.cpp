@@ -21,10 +21,10 @@ namespace Panic {
         message = new Message(title, detail);
         Interrupt::Setup(0x77, (Number) PanicInterruptHandler, 0x08, 0x8E);
     }
-    const String& GetMessageTitle() {
+    String GetMessageTitle() {
         return message->title;
     }
-    const String& GetMessageDetail() {
+    String GetMessageDetail() {
         return message->detail;
     }
 }

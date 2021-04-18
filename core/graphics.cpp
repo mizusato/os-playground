@@ -56,9 +56,7 @@ namespace Graphics {
     void DrawPixel(Number x, Number y, Number r, Number g, Number b) {
         screen->DrawPixel(x, y, r, g, b);
     }
-    void DrawString(Number base_x, Number base_y, const String& str) {
-        // NOTE: using a reference to `str` to avoid RC operations,
-        //       in order to prevent OOM problems when displaying panic messages
+    void DrawString(Number base_x, Number base_y, String str) {
         Number w = BASIC_FONT_WIDTH;
         Number h = BASIC_FONT_HEIGHT;
         Number i = 0;
