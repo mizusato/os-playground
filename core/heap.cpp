@@ -3,6 +3,8 @@
 #include "heap.hpp"
 
 
+#define RESERVED_CHUNKS 16
+
 struct HeapInfo {
     Number size;
 };
@@ -46,7 +48,7 @@ namespace Heap {
         if (n == 0) {
             panic("Heap::Allocate(): invalid argument");
         }
-        if (status.ChunksAvailable < n) {
+        if (status.ChunksAvailable < (n + RESERVED_CHUNKS)) {
             panic("Heap::Allocate(): out of memory");
         }
         Chunk* head = free_list;
