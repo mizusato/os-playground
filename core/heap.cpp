@@ -82,7 +82,7 @@ namespace Heap {
             }
         }
         if (totalConsumed == 0) {
-            ConsumeMemory((void*) DEFAULT_HEAP_START, DEFAULT_HEAP_SIZE);
+            ConsumeMemory((void*) FALLBACK_HEAP_START, FALLBACK_HEAP_SIZE);
         }
     }
     Chunk* Allocate(Number n) {

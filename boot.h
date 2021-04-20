@@ -3,8 +3,8 @@
 
 #define KERNEL_POSITION 0x100000  // 1M ~
 #define KERNEL_RESERVED_AMOUNT (8 * 1024 * 1024)
-#define DEFAULT_HEAP_START 0x1000000  // 16M ~
-#define DEFAULT_HEAP_SIZE (32 * 1024 * 1024)
+#define FALLBACK_HEAP_START 0x1000000  // 16M ~
+#define FALLBACK_HEAP_SIZE (32 * 1024 * 1024)
 
 typedef enum {
     MK_ReservedMemoryType,
