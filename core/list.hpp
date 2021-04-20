@@ -53,9 +53,11 @@ private:
     };
 public:
     List() {
-        static_assert(sizeof(T) < CHUNK_DATA_SIZE, "List: element too big");
-        if (2*sizeof(T) <= CHUNK_DATA_SIZE) {
-            elementPerChunk = (CHUNK_DATA_SIZE / sizeof(T));
+        constexpr Number sizeOfElements = (CHUNK_DATA_SIZE - sizeof(ChunkData));
+        static_assert(sizeof(ChunkData) > 0, "List: invalid ChunkData definition");
+        static_assert(sizeof(T) < sizeOfElements, "List: element too big");
+        if (2*sizeof(T) <= sizeOfElements) {
+            elementPerChunk = (sizeOfElements / sizeof(T));
         } else {
             elementPerChunk = 1;
         }
@@ -98,7 +100,7 @@ public:
         } else {
             Chunk* tail = head->previous;
             ChunkData* data = reinterpret_cast<ChunkData*>(&(tail->data));
-            if (data->elementAmount < elementPerChunk) {
+            if ((data->elementAmount + 1) <= elementPerChunk) {
                 Number index = data->elementAmount;
                 data->elements[index] = element;
                 data->elementAmount += 1;
