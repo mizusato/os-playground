@@ -20,6 +20,8 @@ struct HeapStatus {
 void* operator new (Number size);
 void  operator delete (void* ptr);
 
+inline void* operator new (Number size, void* place) { return place; };
+
 namespace Heap {
     void Init();
     Chunk* Allocate(Number n);

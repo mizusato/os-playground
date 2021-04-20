@@ -8,13 +8,14 @@
 
 
 extern "C" {
-    void Main(GraphicsInfo* gfxInfo);
+    void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo);
     void handlePanicInterrupt();
     void handleKeyboardInterrupt();
 }
 void DrawBackground();
 
-void Main(GraphicsInfo* gfxInfo) {
+void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
+    static_cast<void>(static_cast<KernelEntryPoint>(Main));
     Heap::Init();
     Graphics::Init(gfxInfo);
     Interrupt::Init();
@@ -24,12 +25,33 @@ void Main(GraphicsInfo* gfxInfo) {
     Byte stub[] = "stub";
     {
         String::Builder buf;
-        buf.Write("framebuffer addr: 0x");
-        buf.Write(String::Hex((Number) gfxInfo->framebuffer));
-        buf.Write('\n');
-        buf.Write("stub addr: 0x");
-        buf.Write(String::Hex((Number) &stub));
+        buf.Write("framebuffer addr: ");
+        buf.Write(String::ReadableSize((Number) gfxInfo->framebuffer));
+        buf.Write("\n");
+        buf.Write("stub addr: ");
+        buf.Write(String::ReadableSize((Number) &stub));
         Graphics::DrawString(400, 100, buf.Collect());
+    }
+    {
+        static const char* MemoryKindNames[] = { MEMORY_KIND_NAMES };
+        String::Builder buf;
+        buf.Write("addr / size / kind");
+        buf.Write("\n");
+        Number base = (Number) memInfo->mapBuffer;
+        for (Number ptr = base; (ptr - base) < memInfo->mapSize; ptr += memInfo->descSize) {
+            MemoryDescriptor* desc = reinterpret_cast<MemoryDescriptor*>(ptr);
+            if ((desc->physicalStart < 0x100000) || (desc->numberOfPages < 256)) {
+                continue;
+            }
+            const char* kindName = MemoryKindNames[desc->kind.raw];
+            buf.Write(String::ReadableSize((Number) desc->physicalStart));
+            buf.Write(" / ");
+            buf.Write(String::ReadableSize((Number) (desc->numberOfPages * 4096)));
+            buf.Write(" / ");
+            buf.Write(kindName);
+            buf.Write("\n");
+        }
+        Graphics::DrawString(300, 200, buf.Collect());
     }
     List<Number> l;
     l.Append(1);
@@ -58,8 +80,8 @@ void handleKeyboardInterrupt() {
     Byte key = Keyboard::ReadInput();
     if (key == 0) { return; }
     String::Builder buf;
-    buf.Write(key);
-    buf.Write(' ');
+    buf.Write(String::Chr(key));
+    buf.Write(" ");
     buf.Write(String::Hex(key));
     Graphics::DrawString(100, 150, "    ");
     Graphics::DrawString(100, 150, buf.Collect());

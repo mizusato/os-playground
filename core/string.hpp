@@ -36,11 +36,16 @@ private:
     String(Shared<Impl> impl): impl(impl) {};
 public:
     ~String() {};
-    String(Char ch);
+    Unique<Iterator> Iterate() const { return impl->Iterate(); };
     String(const char* data);
     String(Unique<List<Char>> list);
-    Unique<Iterator> Iterate() const { return impl->Iterate(); };
+    static String Chr(Char ch);
+    explicit String(Number n);
     static String Hex(Number n);
+    static String Oct(Number n);
+    static String Bin(Number n);
+    static String ReadableSize(Number n);
+    static String Join(const List<String>& list, String sep);
 };
 
 class LegacyString final: public String::Impl {

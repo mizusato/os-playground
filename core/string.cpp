@@ -2,35 +2,14 @@
 #include "string.hpp"
 
 
-String::String(Char ch):
-    String(Unique<List<Char>>(new List<Char>(ch))) {};
-
 String::String(const char* data):
     impl(Shared<String::Impl>(new LegacyString(data))) {};
 
 String::String(Unique<List<Char>> list):
     impl(Shared<String::Impl>(new ListString(std::move(list)))) {};
 
-String String::Hex(Number n) {
-    static const char* mapping = "0123456789abcdef";
-    char reversed[24];
-    Number len = 0;
-    while(n > 0) {
-        char digit = mapping[n & 0xF];
-        n = (n >> 4);
-        reversed[len] = digit;
-        len += 1;
-    }
-    if (len == 0) {
-        return "0";
-    } else {
-        auto buf = Unique<List<Char>>(new List<Char>());
-        for (Number i = 0; i < len; i += 1) {
-            Number j = (len - 1 - i);
-            buf->Append(reversed[j]);
-        }
-        return std::move(buf);
-    }
+String String::Chr(Char ch) {
+    return String(Unique<List<Char>>(new List<Char>(ch)));
 }
 
 void String::Builder::Write(String s) {
@@ -68,5 +47,68 @@ Char ListString::Iterator::Current() const {
 }
 void ListString::Iterator::Proceed() {
     iterator->Proceed();
+}
+
+String NumberToString(Number n, Number base);
+String::String(Number n): String(NumberToString(n, 10)) {}
+String String::Hex(Number n) { return NumberToString(n, 16); }
+String String::Oct(Number n) { return NumberToString(n, 8); }
+String String::Bin(Number n) { return NumberToString(n, 2); }
+
+String String::ReadableSize(Number n) {
+    if (n == 0) {
+        return "0";
+    }
+    auto list = Unique<List<String>>(new List<String>());
+    Number m;
+    const char* units = "bkmgt";
+    for (const char* unit = units; *unit != 0; unit += 1) {
+        if (n > 0) {
+            m = (n & 0x3FF);
+            n = (n >> 10);
+            if (m > 0) {
+                String::Builder buf;
+                buf.Write(String(m));
+                buf.Write(String::Chr(*unit));
+                list->Prepend(buf.Collect());
+            }
+        } else {
+            break;
+        }
+    }
+    return String::Join(*list, "+");
+}
+
+String String::Join(const List<String>& list, String sep) {
+    String::Builder buf;
+    bool first = true;
+    for (auto it = list.Iterate(); it->HasCurrent(); it->Proceed()) {
+        if (!(first)) { buf.Write(sep); }
+        first = false;
+        buf.Write(it->Current());
+    }
+    return buf.Collect();
+}
+
+String NumberToString(Number n, Number base) {
+    static const char* mapping = "0123456789abcdef";
+    char reversed[24];
+    Number len = 0;
+    while(n > 0) {
+        char digit = mapping[n % base];
+        n = (n / base);
+        reversed[len] = digit;
+        len += 1;
+    }
+    if (len == 0) {
+        return "0";
+    } else {
+        auto buf = Unique<List<Char>>(new List<Char>());
+        for (Number i = 0; i < len; i += 1) {
+            Number j = (len - 1 - i);
+            buf->Append(reversed[j]);
+        }
+        return std::move(buf);
+    }
 }
 

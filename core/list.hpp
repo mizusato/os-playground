@@ -24,7 +24,7 @@ public:
         T Current() const {
             if (!(HasCurrent())) { panic("invalid iterator usage"); }
             const ChunkData* data = reinterpret_cast<const ChunkData*>(&(current->data));
-            return data->elements[innerIndex];
+            return data->Get(innerIndex);
         }
         void Proceed() {
             if (!(HasCurrent())) { panic("invalid iterator usage"); }
@@ -48,14 +48,29 @@ private:
     Number numberOfChunks;
     Chunk* head;
     struct ChunkData {
+    public:
+        T Get(Number index) const {
+            return elements[index];
+        }
+        void Set(Number index, T value) {
+            if (index < elementAmount) {
+                elements[index] = value;
+            } else {
+                new(&elements[index]) T(value);
+            }
+        }
+        void Unset(Number index) {
+            elements[index].~T();
+        }
         Number elementAmount;
+    private:
         T elements[];
     };
 public:
     List() {
+        static_assert(sizeof(ChunkData) < CHUNK_DATA_SIZE, "List: invalid ChunkData definition");
         constexpr Number sizeOfElements = (CHUNK_DATA_SIZE - sizeof(ChunkData));
-        static_assert(sizeof(ChunkData) > 0, "List: invalid ChunkData definition");
-        static_assert(sizeof(T) < sizeOfElements, "List: element too big");
+        static_assert(sizeof(T) <= sizeOfElements, "List: element too big");
         if (2*sizeof(T) <= sizeOfElements) {
             elementPerChunk = (sizeOfElements / sizeof(T));
         } else {
@@ -73,7 +88,7 @@ public:
             for (Number i = 0; i < numberOfChunks; i += 1) {
                 ChunkData* data = reinterpret_cast<ChunkData*>(&(current->data));
                 for (Number j = 0; j < data->elementAmount; j += 1) {
-                    data->elements[j].~T();
+                    data->Unset(j);
                 }
                 current = current->next;
             }
@@ -90,11 +105,42 @@ public:
         iterator->innerIndex = 0;
         return Unique<Iterator>(iterator);
     }
+    void Prepend(T element) {
+        if (head == nullptr) {
+            head = Heap::Allocate(1);
+            ChunkData* data = reinterpret_cast<ChunkData*>(&(head->data));
+            data->Set(0, element);
+            data->elementAmount = 1;
+            numberOfChunks = 1;
+        } else {
+            ChunkData* data = reinterpret_cast<ChunkData*>(&(head->data));
+            if ((data->elementAmount + 1) <= elementPerChunk) {
+                Number n = data->elementAmount;
+                for (Number i = n; i >= 1; i -= 1) {
+                    data->Set(i, data->Get(i - 1));
+                }
+                data->Set(0, element);
+                data->elementAmount += 1;
+            } else {
+                Chunk* new_head = Heap::Allocate(1);
+                ChunkData* data = reinterpret_cast<ChunkData*>(&(new_head->data));
+                data->Set(0, element);
+                data->elementAmount = 1;
+                Chunk* tail = head->previous;
+                new_head->previous = tail;
+                new_head->next = head;
+                tail->next = new_head;
+                head->previous = new_head;
+                head = new_head;
+                numberOfChunks += 1;
+            }
+        }
+    }
     void Append(T element) {
         if (head == nullptr) {
             head = Heap::Allocate(1);
             ChunkData* data = reinterpret_cast<ChunkData*>(&(head->data));
-            data->elements[0] = element;
+            data->Set(0, element);
             data->elementAmount = 1;
             numberOfChunks = 1;
         } else {
@@ -102,12 +148,12 @@ public:
             ChunkData* data = reinterpret_cast<ChunkData*>(&(tail->data));
             if ((data->elementAmount + 1) <= elementPerChunk) {
                 Number index = data->elementAmount;
-                data->elements[index] = element;
+                data->Set(index, element);
                 data->elementAmount += 1;
             } else {
                 Chunk* new_tail = Heap::Allocate(1);
                 ChunkData* data = reinterpret_cast<ChunkData*>(&(new_tail->data));
-                data->elements[0] = element;
+                data->Set(0, element);
                 data->elementAmount = 1;
                 Chunk* tail = head->previous;
                 new_tail->next = head;

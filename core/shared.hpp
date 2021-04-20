@@ -31,6 +31,7 @@ public:
         }
         blk = another.blk;
         blk->ref += 1;
+        return *this;
     }
     virtual ~Shared() {
         blk->ref -= 1;

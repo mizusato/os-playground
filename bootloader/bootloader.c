@@ -18,6 +18,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     InitializeLib(ImageHandle, SystemTable);
     Print(L"=============== Bootloader ===============\n");
     Print(L">>> Hello World\n");
+    /* Load Kernel */
     EFI_STATUS status;
     CHAR16* kernelFileName = KERNEL_FILE_NAME;
     EFI_FILE_HANDLE Volume = GetVolume(ImageHandle);
@@ -40,6 +41,17 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     }
     uefi_call_wrapper(fd->Close, 1, fd);
     kernelLoaded = TRUE; kernel_failed_to_load: {}
+    /* Get Memory Map */
+    UINT8 mapBuffer[16 * 1024];
+    UINTN mapSize = sizeof(mapBuffer);
+    UINTN mapKey, descSize, descVer;
+    status = uefi_call_wrapper(BS->GetMemoryMap, 5, &mapSize, &mapBuffer, &mapKey, &descSize, &descVer);
+    if(EFI_ERROR(status)) {
+        Print(L"Unable to get memory map\n");
+        return EFI_ABORTED;
+    }
+
+    /* Initialize GOP */
     EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
     status = uefi_call_wrapper(BS->LocateProtocol, 3, &gopGuid, NULL, (void**)&gop);
@@ -87,21 +99,15 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         gop->Mode->Info->VerticalResolution,
         gop->Mode->Info->PixelsPerScanLine
     );
-    // uefi_call_wrapper(BS->Stall, 1, 3000*1000);
-    /*
-    UINT32* fb = (UINT32*) gop->Mode->FrameBufferBase;
-    UINT32 lineSize = gop->Mode->Info->HorizontalResolution;
-    UINTN j;
-    for (i = 0; i < gop->Mode->Info->VerticalResolution; i += 1) {
-        for (j = 0; j < gop->Mode->Info->PixelsPerScanLine; j += 1) {
-            fb[(i * lineSize) + j] = (0x9944DDCC + j*0x80);
-        }
-    }
-    */
+    /* Boot the Kernel */
     if (kernelLoaded) {
+        MemoryInfo kernelMemoryInfo;
+        kernelMemoryInfo.mapBuffer = (void*) mapBuffer;
+        kernelMemoryInfo.mapSize = mapSize;
+        kernelMemoryInfo.descSize = descSize;
+        GraphicsInfo kernelGfxInfo;
         EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE* mode = gop->Mode;
         EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *info = mode->Info;
-        GraphicsInfo kernelGfxInfo;
         kernelGfxInfo.framebuffer = (UINT32*) mode->FrameBufferBase;
         kernelGfxInfo.screenHeight = info->VerticalResolution;
         kernelGfxInfo.screenBufferWidth = info->HorizontalResolution;
@@ -114,7 +120,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             kernelGfxInfo.pixelFormat = PF_Unsupported;
         }
         KernelEntryPoint entry = (KernelEntryPoint) kernelContent;
-        entry(&kernelGfxInfo);
+        entry(&kernelMemoryInfo, &kernelGfxInfo);
     }
     while(1) __asm__("hlt");
     return EFI_SUCCESS;
