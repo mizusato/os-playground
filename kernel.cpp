@@ -24,7 +24,10 @@ void Main(GraphicsInfo* gfxInfo) {
     Byte stub[] = "stub";
     {
         String::Builder buf;
-        buf.Write("stub address: 0x");
+        buf.Write("framebuffer addr: 0x");
+        buf.Write(String::Hex((Number) gfxInfo->framebuffer));
+        buf.Write('\n');
+        buf.Write("stub addr: 0x");
         buf.Write(String::Hex((Number) &stub));
         Graphics::DrawString(400, 100, buf.Collect());
     }

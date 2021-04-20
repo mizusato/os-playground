@@ -60,13 +60,19 @@ namespace Graphics {
         Number w = BASIC_FONT_WIDTH;
         Number h = BASIC_FONT_HEIGHT;
         Number i = 0;
+        Number j = 0;
         for (auto it = str.Iterate(); it->HasCurrent(); it->Proceed()) {
-            char ch = it->Current();
+            Char ch = it->Current();
+            if (ch == '\n') {
+                i = 0;
+                j += 1;
+                continue;
+            }
             for (Number dy = 0; dy < h; dy += 1) {
                 const Number* data = BasicFont::GetCharData(ch);
                 for (Number dx = 0; dx < w; dx += 1) {
                     Number x = base_x + (i * w) + dx;
-                    Number y = base_y + dy;
+                    Number y = base_y + (j * h) + dy;
                     Number offset = (w - dx - 1);
                     bool black = false;
                     if (data != nullptr) {
