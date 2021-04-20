@@ -16,7 +16,7 @@ void DrawBackground();
 
 void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     static_cast<void>(static_cast<KernelEntryPoint>(Main));
-    Heap::Init();
+    Heap::Init(memInfo);
     Graphics::Init(gfxInfo);
     Interrupt::Init();
     Panic::Init();
@@ -35,12 +35,16 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     {
         static const char* MemoryKindNames[] = { MEMORY_KIND_NAMES };
         String::Builder buf;
+        buf.Write("(efi available)");
+        buf.Write("\n");
         buf.Write("addr / size / kind");
         buf.Write("\n");
         Number base = (Number) memInfo->mapBuffer;
         for (Number ptr = base; (ptr - base) < memInfo->mapSize; ptr += memInfo->descSize) {
             MemoryDescriptor* desc = reinterpret_cast<MemoryDescriptor*>(ptr);
-            if ((desc->physicalStart < 0x100000) || (desc->numberOfPages < 256)) {
+            if ( ! ((desc->physicalStart >= 0x100000) &&
+                (desc->numberOfPages >= 256) &&
+                (desc->kind.value == MK_ConventionalMemory)) ) {
                 continue;
             }
             const char* kindName = MemoryKindNames[desc->kind.raw];
@@ -52,6 +56,32 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             buf.Write("\n");
         }
         Graphics::DrawString(300, 200, buf.Collect());
+    }
+    {
+        String::Builder buf;
+        buf.Write("(consumed)");
+        buf.Write("\n");
+        buf.Write("addr / size");
+        buf.Write("\n");
+        Number n;
+        const HeapMemoryInfo* info = Heap::GetInfo(&n);
+        for (Number i = 0; i < n; i += 1) {
+            buf.Write(String::ReadableSize(info[i].start));
+            buf.Write(" / ");
+            buf.Write(String::ReadableSize(info[i].size));
+            buf.Write("\n");
+        }
+        Graphics::DrawString(300, 400, buf.Collect());
+    }
+    {
+        String::Builder buf;
+        HeapStatus status = Heap::GetStatus();
+        buf.Write("heap chunks: ");
+        buf.Write(String(status.ChunksTotal));
+        buf.Write("\n");
+        buf.Write("heap size: ");
+        buf.Write(String::ReadableSize(status.ChunksTotal * sizeof(Chunk)));
+        Graphics::DrawString(300, 600, buf.Collect());
     }
     List<Number> l;
     l.Append(1);

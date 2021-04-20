@@ -1,8 +1,10 @@
 #ifndef BOOT_H
 #define BOOT_H
 
-#define HEAP_START 0x1000000  // 16M ~
-#define HEAP_SIZE 0x2000000  // 32M
+#define KERNEL_POSITION 0x100000  // 1M ~
+#define KERNEL_RESERVED_AMOUNT (8 * 1024 * 1024)
+#define DEFAULT_HEAP_START 0x1000000  // 16M ~
+#define DEFAULT_HEAP_SIZE (32 * 1024 * 1024)
 
 typedef enum {
     MK_ReservedMemoryType,

@@ -2,6 +2,7 @@
 #define HEAP_HPP
 
 #include "types.h"
+#include "../boot.h"
 
 
 #define CHUNK_DATA_SIZE 112
@@ -17,15 +18,21 @@ struct HeapStatus {
     Number  ChunksAvailable;
 };
 
+struct HeapMemoryInfo {
+    Number  start;
+    Number  size;
+};
+
 void* operator new (Number size);
 void  operator delete (void* ptr);
 
 inline void* operator new (Number size, void* place) { return place; };
 
 namespace Heap {
-    void Init();
+    void Init(MemoryInfo* memInfo);
     Chunk* Allocate(Number n);
     void Free(Chunk* head, Number n);
+    const HeapMemoryInfo* GetInfo(Number* length);
     HeapStatus GetStatus();
 }
 
