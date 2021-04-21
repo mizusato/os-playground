@@ -22,7 +22,8 @@ struct InterruptTablePointer {
 namespace Interrupt {
     void Setup(Number N, Number base, Word selector, Byte flags);
     void Init();
-    void Unmask(Number which);
+    void UnmaskPIC1(Number which);
+    void UnmaskPIC2(Number which);
 };
 
 extern "C" {

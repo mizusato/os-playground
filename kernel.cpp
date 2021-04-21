@@ -4,6 +4,7 @@
 #include "core/interrupt.hpp"
 #include "core/panic.hpp"
 #include "core/keyboard.hpp"
+#include "core/mouse.hpp"
 #include "core/list.hpp"
 
 
@@ -11,6 +12,7 @@ extern "C" {
     void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo);
     void handlePanicInterrupt();
     void handleKeyboardInterrupt();
+    void handleMouseInterrupt();
 }
 void DrawBackground();
 
@@ -21,6 +23,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     Interrupt::Init();
     Panic::Init();
     Keyboard::Init();
+    Mouse::Init();
     DrawBackground();
     Byte stub[] = "stub";
     {
@@ -115,6 +118,27 @@ void handleKeyboardInterrupt() {
     buf.Write(String::Hex(key));
     Graphics::DrawString(100, 150, "    ");
     Graphics::DrawString(100, 150, buf.Collect());
+}
+
+void handleMouseInterrupt() {
+    Mouse::Packet packet;
+    Number count = 0;
+    while (Mouse::ReadPacket(&packet)) {
+        String::Builder buf;
+        buf.Write("mouse:");
+        buf.Write("\n");
+        buf.Write("dx: ");
+        buf.Write(String::Pad(String::Hex(packet.dx), 16));
+        buf.Write("\n");
+        buf.Write("dy: ");
+        buf.Write(String::Pad(String::Hex(packet.dy), 16));
+        Graphics::DrawString(100, 200, buf.Collect());
+        count += 1;
+    }
+    String::Builder buf;
+    buf.Write(String(count));
+    buf.Write(" packets received");
+    Graphics::DrawString(100, 350, buf.Collect());
 }
 
 void DrawBackground() {

@@ -7,15 +7,12 @@
 #define PIC_1_DATA 0x21
 #define PIC_2_DATA 0xA1
 
-void setupPIC();
-Byte getInterruptMask();
-void setInterruptMask(Byte mask);
-
 InterruptDescriptor Idt[IDT_SIZE] = {0};
 InterruptTablePointer IdtPointer;
 extern "C" {
     void LoadInterruptTable(InterruptTablePointer*);
 }
+void setupPIC();
 
 namespace Interrupt {
     void Setup(Number N, Number base, Word selector, Byte flags) {
@@ -32,18 +29,14 @@ namespace Interrupt {
         LoadInterruptTable(&IdtPointer);
         SetInterruptFlag();
     }
-    void Unmask(Number which) {
-        Byte mask = getInterruptMask();
-        setInterruptMask(mask & (~(1 << which)));
+    void UnmaskPIC1(Number which) {
+        Byte mask = InputByte(PIC_1_DATA);
+        OutputByte(PIC_1_DATA, mask & (~(1 << which)));
     }
-}
-
-Byte getInterruptMask() {
-    return InputByte(PIC_1_DATA);
-}
-
-void setInterruptMask(Byte mask) {
-    OutputByte(PIC_1_DATA, mask);
+    void UnmaskPIC2(Number which) {
+        Byte mask = InputByte(PIC_2_DATA);
+        OutputByte(PIC_2_DATA, mask & (~(1 << which)));
+    }
 }
 
 void setupPIC() {
@@ -58,8 +51,8 @@ void setupPIC() {
     OutputByte(PIC_1_DATA, 0x20);
     OutputByte(PIC_2_DATA, 0x28);
     /* ICW3 - setup cascading */
-    OutputByte(PIC_1_DATA, 0x00);
-    OutputByte(PIC_2_DATA, 0x00);
+    OutputByte(PIC_1_DATA, 0x04);
+    OutputByte(PIC_2_DATA, 0x02);
     /* ICW4 - environment info */
     OutputByte(PIC_1_DATA, 0x01);
     OutputByte(PIC_2_DATA, 0x01);

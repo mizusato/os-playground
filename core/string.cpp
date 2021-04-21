@@ -79,6 +79,21 @@ String String::ReadableSize(Number n) {
     return String::Join(*list, "+");
 }
 
+String String::Pad(String s, Number n) {
+    String::Builder buf;
+    Number count = 0;
+    for (auto it = s.Iterate(); it->HasCurrent(); it->Proceed()) {
+        buf.Write(String::Chr(it->Current()));
+        count += 1;
+    }
+    if (count < n) {
+        for (Number i = 0; i < (n - count); i += 1) {
+            buf.Write(" ");
+        }
+    }
+    return buf.Collect();
+}
+
 String String::Join(const List<String>& list, String sep) {
     String::Builder buf;
     bool first = true;

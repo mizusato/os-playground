@@ -54,6 +54,33 @@ pop rbx
 pop rax
 %endmacro
 
+%macro ISR_ENTER 0
+    cli
+    PUSHAQ
+    cld
+%endmacro
+
+%macro ISR_EXIT_PIC1 0
+    mov dx, 0x20
+    mov al, 0x20
+    out dx, al
+    POPAQ
+    sti
+    iretq
+%endmacro
+
+%macro ISR_EXIT_PIC2 0
+    mov dx, 0xA0
+    mov al, 0x20
+    out dx, al
+    mov dx, 0x20
+    mov al, 0x20
+    out dx, al
+    POPAQ
+    sti
+    iretq
+%endmacro
+
 global SetInterruptFlag
 global ClearInterruptFlag
 global LoadInterruptTable
@@ -70,16 +97,16 @@ LoadInterruptTable:
 global KeyboardInterruptHandler
 extern handleKeyboardInterrupt
 KeyboardInterruptHandler:
-    cli
-    PUSHAQ
-    cld
+    ISR_ENTER
     call handleKeyboardInterrupt
-    mov rdi, 0x20
-    mov rsi, 0x20
-    call OutputByte
-    POPAQ
-    sti
-    iretq
+    ISR_EXIT_PIC1
+
+global MouseInterruptHandler
+extern handleMouseInterrupt
+MouseInterruptHandler:
+    ISR_ENTER
+    call handleMouseInterrupt
+    ISR_EXIT_PIC2
 
 global PanicInterruptHandler
 extern handlePanicInterrupt

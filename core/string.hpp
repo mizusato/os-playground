@@ -45,6 +45,7 @@ public:
     static String Oct(Number n);
     static String Bin(Number n);
     static String ReadableSize(Number n);
+    static String Pad(String s, Number n);
     static String Join(const List<String>& list, String sep);
 };
 
