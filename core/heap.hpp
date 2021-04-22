@@ -16,6 +16,9 @@ struct Chunk {
 struct HeapStatus {
     Number  ChunksTotal;
     Number  ChunksAvailable;
+    Number  StaticPosition;
+    Number  StaticSize;
+    Number  StaticAvailable;
 };
 
 struct HeapMemoryInfo {
@@ -32,6 +35,7 @@ namespace Heap {
     void Init(MemoryInfo* memInfo);
     Chunk* Allocate(Number n);
     void Free(Chunk* head, Number n);
+    void* RequestStatic(Number size);
     const HeapMemoryInfo* GetInfo(Number* length);
     HeapStatus GetStatus();
 }

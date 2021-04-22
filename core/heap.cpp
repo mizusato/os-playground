@@ -3,11 +3,13 @@
 
 
 #define RESERVED_CHUNKS 16
+#define HEAP_STATIC_AREA_SIZE (16 * 1024 * 1024)
 #define HEAP_MEMORY_INFO_LOG_MAX 128
 #define MINIMAL_ACCEPTED_MEMORY_AREA_SIZE (100 * 1024)
 
 Chunk sentinel_chunk;
 Chunk* free_list;
+Byte* static_ptr;
 HeapStatus status;
 HeapMemoryInfo info[HEAP_MEMORY_INFO_LOG_MAX];
 Number info_length = 0;
@@ -58,8 +60,12 @@ namespace Heap {
         sentinel_chunk.next = &sentinel_chunk;
         sentinel_chunk.previous = &sentinel_chunk;
         free_list = &sentinel_chunk;
+        static_ptr = nullptr;
         status.ChunksTotal = 0;
         status.ChunksAvailable = 0;
+        status.StaticPosition = 0;
+        status.StaticSize = 0;
+        status.StaticAvailable = 0;
         Number totalConsumed = 0;
         Number base = (Number) memInfo->mapBuffer;
         for (Number ptr = base; (ptr - base) < memInfo->mapSize; ptr += memInfo->descSize) {
@@ -76,6 +82,15 @@ namespace Heap {
                     } else {
                         continue;
                     }
+                }
+                Number static_size = HEAP_STATIC_AREA_SIZE;
+                if (static_ptr == nullptr && size > static_size) {
+                    static_ptr = reinterpret_cast<Byte*>(start);
+                    status.StaticPosition = start;
+                    status.StaticSize = static_size;
+                    status.StaticAvailable = static_size;
+                    size -= static_size;
+                    start += static_size;
                 }
                 ConsumeMemory(reinterpret_cast<void*>(start), size);
                 totalConsumed += 1;
@@ -119,6 +134,15 @@ namespace Heap {
         head->previous = free_list;
         free_list->next = head;
         status.ChunksAvailable += n;
+    }
+    void* RequestStatic(Number size) {
+        if (size > status.StaticAvailable) {
+            panic("Heap::AllocateStatic(): static memory not enough");
+        }
+        void* allocated = static_ptr;
+        static_ptr += size;
+        status.StaticAvailable -= size;
+        return allocated;
     }
     const HeapMemoryInfo* GetInfo(Number* length) {
         *length = info_length;

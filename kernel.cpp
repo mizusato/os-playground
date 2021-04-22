@@ -64,8 +64,17 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         Graphics::DrawString(300, 200, buf.Collect());
     }
     {
+        HeapStatus status = Heap::GetStatus();
         String::Builder buf;
-        buf.Write("(consumed)");
+        buf.Write("(consumed as static)");
+        buf.Write("\n");
+        buf.Write("addr / size");
+        buf.Write("\n");
+        buf.Write(String::ReadableSize(status.StaticPosition));
+        buf.Write(" / ");
+        buf.Write(String::ReadableSize(status.StaticSize));
+        buf.Write("\n");
+        buf.Write("(consumed as chunks)");
         buf.Write("\n");
         buf.Write("addr / size");
         buf.Write("\n");
@@ -87,7 +96,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         buf.Write("\n");
         buf.Write("heap size: ");
         buf.Write(String::ReadableSize(status.ChunksTotal * sizeof(Chunk)));
-        Graphics::DrawString(300, 600, buf.Collect());
+        Graphics::DrawString(300, 675, buf.Collect());
     }
     List<Number> l;
     l.Append(1);
