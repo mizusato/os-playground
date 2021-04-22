@@ -3,6 +3,7 @@
 #include "core/graphics.hpp"
 #include "core/interrupt.hpp"
 #include "core/panic.hpp"
+#include "core/timer.hpp"
 #include "core/keyboard.hpp"
 #include "core/mouse.hpp"
 #include "core/list.hpp"
@@ -11,6 +12,7 @@
 extern "C" {
     void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo);
     void handlePanicInterrupt();
+    void handleTimerInterrupt();
     void handleKeyboardInterrupt();
     void handleMouseInterrupt();
 }
@@ -22,6 +24,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     Graphics::Init(gfxInfo);
     Interrupt::Init();
     Panic::Init();
+    Timer::Init();
     Keyboard::Init();
     Mouse::Init();
     DrawBackground();
@@ -107,6 +110,16 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
 void handlePanicInterrupt() {
     Graphics::DrawString(150, 150, Panic::GetMessageTitle());
     Graphics::DrawString(150, 186, Panic::GetMessageDetail());
+}
+
+void handleTimerInterrupt() {
+    static Number seconds = 0;
+    static Number count = 0;
+    if (count == 0) {
+        Graphics::DrawString(750, 600, String(seconds));
+        seconds += 1;
+    }
+    count = (count + 1) % 250;
 }
 
 void handleKeyboardInterrupt() {

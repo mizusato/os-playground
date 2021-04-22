@@ -94,6 +94,13 @@ LoadInterruptTable:
     lidt [rdi]
     ret
 
+global TimerInterruptHandler
+extern handleTimerInterrupt
+TimerInterruptHandler:
+    ISR_ENTER
+    call handleTimerInterrupt
+    ISR_EXIT_PIC_1
+
 global KeyboardInterruptHandler
 extern handleKeyboardInterrupt
 KeyboardInterruptHandler:
