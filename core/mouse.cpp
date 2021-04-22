@@ -36,9 +36,8 @@ namespace Mouse {
         PS2::ReadData(); // ACK
         SendCommand(MOUSE_SET_DEFAULTS);
         SendCommand(MOUSE_ENABLE_PACKET_STREAMING);
-        Interrupt::Setup(0x2c, (Number) MouseInterruptHandler, 0x08, 0x8E);
-        Interrupt::UnmaskPIC1(2);
-        Interrupt::UnmaskPIC2(4);
+        Interrupt::Setup(IRQ(12), MouseInterruptHandler);
+        Interrupt::UnmaskIRQ(12);
     }
     inline bool ReadyToRead() {
         Byte flags = PS2::ReadCtrl();

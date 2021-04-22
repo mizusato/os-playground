@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+#define IRQ(n) (0x20 + n)
 
 struct InterruptDescriptor {
     Word   Offset_0;
@@ -20,10 +21,10 @@ struct InterruptTablePointer {
 } __attribute__((packed));
 
 namespace Interrupt {
-    void Setup(Number N, Number base, Word selector, Byte flags);
+    void Setup(Number n, void (*handler)(), Word selector, Byte flags);
+    void Setup(Number n, void (*handler)());
     void Init();
-    void UnmaskPIC1(Number which);
-    void UnmaskPIC2(Number which);
+    void UnmaskIRQ(Number irq);
 };
 
 extern "C" {

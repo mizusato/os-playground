@@ -15,12 +15,16 @@ extern "C" {
 void setupPIC();
 
 namespace Interrupt {
-    void Setup(Number N, Number base, Word selector, Byte flags) {
-        Idt[N].Offset_0 = base & 0xFFFF;
-        Idt[N].Offset_16 = (base >> 16) & 0xFFFF;
-        Idt[N].Offset_32 = 0;
-        Idt[N].Selector = selector;
-        Idt[N].Flags = flags;
+    void Setup(Number n, void (*handler)(), Word selector, Byte flags) {
+        Number offset = (Number) handler;
+        Idt[n].Offset_0 = offset & 0xFFFF;
+        Idt[n].Offset_16 = (offset >> 16) & 0xFFFF;
+        Idt[n].Offset_32 = 0;
+        Idt[n].Selector = selector;
+        Idt[n].Flags = flags;
+    }
+    void Setup(Number n, void (*handler)()) {
+        Setup(n, handler, 0x08, 0x8E);
     }
     void Init() {
         setupPIC();
@@ -29,13 +33,16 @@ namespace Interrupt {
         LoadInterruptTable(&IdtPointer);
         SetInterruptFlag();
     }
-    void UnmaskPIC1(Number which) {
-        Byte mask = InputByte(PIC_1_DATA);
-        OutputByte(PIC_1_DATA, mask & (~(1 << which)));
-    }
-    void UnmaskPIC2(Number which) {
-        Byte mask = InputByte(PIC_2_DATA);
-        OutputByte(PIC_2_DATA, mask & (~(1 << which)));
+    void UnmaskIRQ(Number irq) {
+        if (irq >= 8) {
+            Byte mask = InputByte(PIC_2_DATA);
+            OutputByte(PIC_2_DATA, mask & (~ (1 << (irq - 8))));
+            mask = InputByte(PIC_1_DATA);
+            OutputByte(PIC_1_DATA, mask & (~ 0x04));
+        } else {
+            Byte mask = InputByte(PIC_1_DATA);
+            OutputByte(PIC_1_DATA, mask & (~ (1 << irq)));
+        }
     }
 }
 

@@ -60,7 +60,7 @@ pop rax
     cld
 %endmacro
 
-%macro ISR_EXIT_PIC1 0
+%macro ISR_EXIT_PIC_1 0
     mov dx, 0x20
     mov al, 0x20
     out dx, al
@@ -69,7 +69,7 @@ pop rax
     iretq
 %endmacro
 
-%macro ISR_EXIT_PIC2 0
+%macro ISR_EXIT_PIC_2 0
     mov dx, 0xA0
     mov al, 0x20
     out dx, al
@@ -99,14 +99,14 @@ extern handleKeyboardInterrupt
 KeyboardInterruptHandler:
     ISR_ENTER
     call handleKeyboardInterrupt
-    ISR_EXIT_PIC1
+    ISR_EXIT_PIC_1
 
 global MouseInterruptHandler
 extern handleMouseInterrupt
 MouseInterruptHandler:
     ISR_ENTER
     call handleMouseInterrupt
-    ISR_EXIT_PIC2
+    ISR_EXIT_PIC_2
 
 global PanicInterruptHandler
 extern handlePanicInterrupt

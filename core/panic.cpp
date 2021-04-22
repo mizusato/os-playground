@@ -19,7 +19,7 @@ namespace Panic {
         String title = "kernel panic";
         String detail = detailBuffer;
         message = new Message(title, detail);
-        Interrupt::Setup(0x77, (Number) PanicInterruptHandler, 0x08, 0x8E);
+        Interrupt::Setup(0x81, PanicInterruptHandler);
     }
     String GetMessageTitle() {
         return message->title;
@@ -36,6 +36,6 @@ void panic(const char* detail) {
         i += 1;
     }
     Panic::detailBuffer[i] = 0;
-    __asm__("int $0x77");
+    __asm__("int $0x81");
 }
 
