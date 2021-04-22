@@ -12,7 +12,7 @@ namespace Panic {
 void panic(const char* msg);
 
 extern "C" {
-    void panicInterruptHandler(const char* desc);
+    void handlePanicInterrupt();
 }
 
 #endif

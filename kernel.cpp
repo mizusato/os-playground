@@ -9,15 +9,9 @@
 #include "core/list.hpp"
 
 
-extern "C" {
-    void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo);
-    void handlePanicInterrupt();
-    void handleTimerInterrupt();
-    void handleKeyboardInterrupt();
-    void handleMouseInterrupt();
-}
 void DrawBackground();
 
+extern "C"
 void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     static_cast<void>(static_cast<KernelEntryPoint>(Main));
     Heap::Init(memInfo);
