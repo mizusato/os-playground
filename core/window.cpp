@@ -28,6 +28,7 @@ namespace WindowManager {
         windows = draft;
     }
     void Raise(Window* w) {
+        if (w->flags.background) { return; }
         auto draft = new List<Window*>();
         bool found = false;
         for (auto it = windows->Iterate(); it->HasCurrent(); it->Proceed()) {

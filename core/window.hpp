@@ -11,6 +11,7 @@ public:
     Point size;
     virtual ~Window() {};
     virtual void Render(Canvas& target, bool active) = 0;
+    // TODO: DispatchKeyboardEvent, DispatchMouseEvent
     // additional options used by WindowManager
     struct Flags {
         bool  background; 
