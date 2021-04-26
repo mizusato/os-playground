@@ -1,11 +1,30 @@
+#include "string.hpp"
 #include "font.hpp"
 
 
-namespace BasicFont {
+#define BASIC_FONT_WIDTH 18
+#define BASIC_FONT_HEIGHT 36
 
-extern const Number Data[];
+extern const Number BasicFontData[];
 
-const Number* GetCharData(char ch) {
+Number BasicFont::Width() const { return BASIC_FONT_WIDTH; };
+Number BasicFont::Height() const { return BASIC_FONT_HEIGHT; };
+
+Font::Pixel BasicFont::GetPixel(Char ch, Number x, Number y) const {
+    Number w = BASIC_FONT_WIDTH;
+    Pixel pixel = { 0xFF, 0 };
+    const Number* data = BasicFont::GetCharData(ch);
+    Number offset = (w - x - 1);
+    if (data != nullptr) {
+        if (data[y] & (1 << offset)) {
+            pixel.lightness = 0;
+            pixel.alpha = 0xFF;
+        }
+    }
+    return pixel;
+}
+
+const Number* BasicFont::GetCharData(Char ch) {
     static const char* SymbolMapping = ":*/#()?!\"'+-~";
     Number index;
     bool found = false;
@@ -18,7 +37,7 @@ const Number* GetCharData(char ch) {
     } else {
         Number i = 0;
         for (const char* sym = SymbolMapping; *sym != 0; sym += 1) {
-            if (*sym == ch) {
+            if (static_cast<Char>(*sym) == ch) {
                 index = 36 + i;
                 found = true;
                 break;
@@ -27,16 +46,17 @@ const Number* GetCharData(char ch) {
         }
     }
     if (found) {
-        return &Data[BASIC_FONT_HEIGHT * index];
+        return &BasicFontData[BASIC_FONT_HEIGHT * index];
     } else {
         return nullptr;
     }
 }
 
+
 // Basic Font Data
 // COPYRIGHT INFO: converted from some characters of "Source Code Pro"
 
-const Number Data[] = {
+const Number BasicFontData[] = {
 
 0b000000000000000000,
 0b000000000000000000,
@@ -1852,6 +1872,4 @@ const Number Data[] = {
 0b000000000000000000,
 
 };
-
-}
 

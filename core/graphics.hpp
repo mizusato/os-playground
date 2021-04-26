@@ -4,6 +4,7 @@
 #include "../boot.h"
 #include "types.h"
 #include "string.hpp"
+#include "font.hpp"
 
 
 class Point {
@@ -30,7 +31,19 @@ public:
     virtual Number Width() const = 0;
     virtual Number Height() const = 0;
     virtual void DrawPixel(Number x, Number y, Number r, Number g, Number b, Number a) = 0;
-    void FillText(Point pos, Color fg, Color bg, String text);
+    Unique<Canvas> SliceView(Point pos, Point size);
+    void FillText(Point pos, Color fg, Color bg, const Font& font, String text);
+};
+
+class Window {
+protected:
+    Window(): position(Point(0,0)), size(Point(300,300)), minSize(Point(200,200)) {};
+public:
+    Point position;
+    Point size;
+    Point minSize;
+    virtual ~Window() {};
+    virtual void Render(Unique<Canvas>) = 0;
 };
 
 namespace Graphics {

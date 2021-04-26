@@ -1,5 +1,4 @@
 #include "../boot.h"
-#include "font.hpp"
 #include "graphics.hpp"
 
 
@@ -7,11 +6,17 @@ Byte ApplyAlpha(Byte fg_, Byte bg_, Byte alpha_) {
     double fg = (double)(fg_);
     double bg = (double)(bg_);
     double alpha = ((double)(alpha_) / 255);
-    Number raw = (Number)(bg + (fg - bg) * alpha); // `round()` omitted
+    Number raw = (Number)(bg + (fg - bg) * alpha);
     if (raw < 0) { raw = 0; }
     if (raw > 255) { raw = 255; }
     Byte clamped = (Byte)(raw);
     return clamped;
+}
+
+Byte ApplyLightness(Byte scalar_, Byte l_) {
+    double scalar = (double)(scalar_);
+    double l = ((double)(l_) / 255);
+    return (Byte)(Number)(scalar * l);
 }
 
 class PixelFormatHandler {
@@ -154,6 +159,7 @@ namespace Graphics {
     Screen* screen = nullptr;
     Canvas* screen_raw_canvas;
     Canvas* screen_draft_canvas;
+    Font* basic_font;
     void Init(GraphicsInfo* gfxInfo) {
         if (screen != nullptr) {
             panic("Graphics::Init(): already initialized");
@@ -161,6 +167,7 @@ namespace Graphics {
         screen = new Screen(gfxInfo);
         screen_raw_canvas = new ScreenRawCanvas(screen);
         screen_draft_canvas = new ScreenDraftCanvas(screen);
+        basic_font = new BasicFont;
     }
     Number ScreenWidth() {
         return screen->Width();
@@ -175,13 +182,41 @@ namespace Graphics {
         Point pos(base_x, base_y);
         Color black(0, 0, 0, 0xFF);
         Color white(0xFF, 0xFF, 0xFF, 0xFF);
-        screen_raw_canvas->FillText(pos, black, white, str);
+        screen_raw_canvas->FillText(pos, black, white, *basic_font, str);
     }
 };
 
-void Canvas::FillText(Point pos, Color fg, Color bg, String text) {
-    Number w = BASIC_FONT_WIDTH,
-           h = BASIC_FONT_HEIGHT;
+class CanvasSlice final: public Canvas {
+public:
+    Canvas* base;
+    Point pos;
+    Point size;
+    CanvasSlice(Canvas* base, Point pos, Point size): base(base), pos(pos), size(size) {};
+    ~CanvasSlice() {};
+    Number Width() const override {
+        return size.X;
+    }
+    Number Height() const override {
+        return size.Y;
+    }
+    void DrawPixel(Number x, Number y, Number r, Number g, Number b, Number a) override {
+        if ((x < size.X) && (y < size.Y)) {
+            x += pos.X;
+            y += pos.Y;
+            if ((x < base->Width()) && (y < base->Height())) {
+                base->DrawPixel(x, y, r, g, b, a);
+            }
+        }
+    }
+};
+
+Unique<Canvas> Canvas::SliceView(Point pos, Point size) {
+    return Unique<Canvas>(new CanvasSlice(this, pos, size));
+}
+
+void Canvas::FillText(Point pos, Color fg, Color bg, const Font& font, String text) {
+    Number w = font.Width(),
+           h = font.Height();
     Number base_x = pos.X,
            base_y = pos.Y;
     Number i = 0,
@@ -194,20 +229,19 @@ void Canvas::FillText(Point pos, Color fg, Color bg, String text) {
             continue;
         }
         for (Number dy = 0; dy < h; dy += 1) {
-            const Number* data = BasicFont::GetCharData(ch);
             for (Number dx = 0; dx < w; dx += 1) {
+                Font::Pixel p = font.GetPixel(ch, dx, dy);
                 Number x = base_x + (i * w) + dx;
                 Number y = base_y + (j * h) + dy;
-                Number offset = (w - dx - 1);
-                bool is_fg = false;
-                if (data != nullptr) {
-                    is_fg = (data[dy] & (1 << offset));
-                }
-                if (is_fg) {
-                    DrawPixel(x, y, fg.R, fg.G, fg.B, fg.A);
-                } else {
-                    DrawPixel(x, y, bg.R, bg.G, bg.B, bg.A);
-                }
+                Byte l = p.lightness;
+                Byte fg_r = ApplyLightness(fg.R, l);
+                Byte fg_g = ApplyLightness(fg.G, l);
+                Byte fg_b = ApplyLightness(fg.B, l);
+                Byte a = (fg.A < p.alpha)? fg.A: p.alpha;
+                Byte r = ApplyAlpha(fg_r, bg.R, a);
+                Byte g = ApplyAlpha(fg_g, bg.G, a);
+                Byte b = ApplyAlpha(fg_b, bg.B, a);
+                DrawPixel(x, y, r, g, b, bg.A);
             }
         }
         i++;
