@@ -35,17 +35,6 @@ public:
     void FillText(Point pos, Color fg, Color bg, const Font& font, String text);
 };
 
-class Window {
-protected:
-    Window(): position(Point(0,0)), size(Point(300,300)), minSize(Point(200,200)) {};
-public:
-    Point position;
-    Point size;
-    Point minSize;
-    virtual ~Window() {};
-    virtual void Render(Unique<Canvas>) = 0;
-};
-
 namespace Graphics {
     void Init(GraphicsInfo* gfxInfo);
     Number ScreenWidth();
