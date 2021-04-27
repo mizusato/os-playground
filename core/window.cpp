@@ -54,5 +54,26 @@ namespace WindowManager {
             current->Render(*viewport, (current == activeWindow));
         }
     }
+    void DispatchEvent(KeyboardEvent ev) {
+        if (activeWindow != nullptr) {
+            activeWindow->DispatchEvent(ev);
+        }
+    }
+    void DispatchEvent(MouseEvent ev) {
+        for (auto it = windows->Iterate(); it->HasCurrent(); it->Proceed()) {
+            Window* current = it->Current();
+            if (current->Contains(ev.pos)) {
+                ev.pos = (ev.pos - current->position);
+                current->DispatchEvent(ev);
+                break;
+            }
+        }
+    }
 };
+
+bool Window::Contains(Point p) const {
+    Point pos = this->position;
+    Point bound = (pos + this->size);
+    return (pos.X <= p.X && p.X <= bound.X && pos.Y <= p.Y && p.Y <= bound.Y);
+}
 

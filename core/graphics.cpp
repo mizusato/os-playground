@@ -2,6 +2,9 @@
 #include "graphics.hpp"
 
 
+Point operator + (Point a, Point b) { return Point((a.X + b.X), (a.Y + b.Y)); }
+Point operator - (Point a, Point b) { return Point((a.X - b.X), (a.Y - b.Y)); }
+
 Byte ApplyAlpha(Byte fg_, Byte bg_, Byte alpha_) {
     double fg = (double)(fg_);
     double bg = (double)(bg_);

@@ -2,6 +2,7 @@
 #define WINDOW_HPP
 
 #include "graphics.hpp"
+#include "events.hpp"
 
 class Window {
 protected:
@@ -11,11 +12,12 @@ public:
     Point size;
     virtual ~Window() {};
     virtual void Render(Canvas& target, bool active) = 0;
-    // TODO: DispatchKeyboardEvent, DispatchMouseEvent
-    // additional options used by WindowManager
+    virtual void DispatchEvent(KeyboardEvent ev) = 0;
+    virtual void DispatchEvent(MouseEvent ev) = 0;
     struct Flags {
         bool  background; 
     } flags;
+    bool Contains(Point p) const;
 };
 
 namespace WindowManager {
@@ -24,6 +26,8 @@ namespace WindowManager {
     void Remove(Window* window);
     void Raise(Window* window);
     void RenderAll(Canvas& canvas);
+    void DispatchEvent(KeyboardEvent ev);
+    void DispatchEvent(MouseEvent ev);
 };
 
 #endif

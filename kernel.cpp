@@ -1,6 +1,8 @@
 #include "boot.h"
 #include "core/heap.hpp"
 #include "core/graphics.hpp"
+#include "core/window.hpp"
+#include "core/events.hpp"
 #include "core/interrupt.hpp"
 #include "core/panic.hpp"
 #include "core/timer.hpp"
@@ -16,6 +18,8 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     static_cast<void>(static_cast<KernelEntryPoint>(Main));
     Heap::Init(memInfo);
     Graphics::Init(gfxInfo);
+    WindowManager::Init();
+    Events::Init();
     Interrupt::Init();
     Panic::Init();
     Timer::Init();
@@ -107,7 +111,44 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         char str[2] = { ch, 0 };
         Graphics::DrawString(200, 100+100*n, str);
     }
-    while(1) __asm__("hlt");
+    while(true) {
+        {
+            TimerEvent ev;
+            while (Events::TimerSecond->Read(&ev)) {
+                Graphics::DrawString(750, 600, String(ev.count));
+            }
+        }
+        {
+            KeyboardEvent ev;
+            while(Events::Keyboard->Read(&ev)) {
+                Char key = ev.key;
+                if (key == 0) {
+                    continue;
+                }
+                String::Builder buf;
+                buf.Write(String::Chr(key));
+                buf.Write(" ");
+                buf.Write(String::Hex(key));
+                Graphics::DrawString(100, 150, "    ");
+                Graphics::DrawString(100, 150, buf.Collect());
+            }
+        }
+        {
+            MouseEvent ev;
+            while(Events::Mouse->Read(&ev)) {
+                String::Builder buf;
+                buf.Write("mouse:");
+                buf.Write("\n");
+                buf.Write("dx: ");
+                buf.Write(String::Pad(String::Hex(ev.pos.X), 16));
+                buf.Write("\n");
+                buf.Write("dy: ");
+                buf.Write(String::Pad(String::Hex(ev.pos.Y), 16));
+                Graphics::DrawString(100, 200, buf.Collect());
+            }
+        }
+        __asm__("hlt");
+    };
 }
 
 void handlePanicInterrupt() {
@@ -119,7 +160,9 @@ void handleTimerInterrupt() {
     static Number seconds = 0;
     static Number count = 0;
     if (count == 0) {
-        Graphics::DrawString(750, 600, String(seconds));
+        TimerEvent ev;
+        ev.count = seconds;
+        Events::TimerSecond->Write(ev);
         seconds += 1;
     }
     count = (count + 1) % 250;
@@ -127,34 +170,26 @@ void handleTimerInterrupt() {
 
 void handleKeyboardInterrupt() {
     Byte key = Keyboard::ReadInput();
-    if (key == 0) { return; }
-    String::Builder buf;
-    buf.Write(String::Chr(key));
-    buf.Write(" ");
-    buf.Write(String::Hex(key));
-    Graphics::DrawString(100, 150, "    ");
-    Graphics::DrawString(100, 150, buf.Collect());
+    KeyboardEvent ev;
+    ev.key = static_cast<Char>(key);
+    Events::Keyboard->Write(ev);
 }
 
 void handleMouseInterrupt() {
     Mouse::Packet packet;
-    Number count = 0;
-    while (Mouse::ReadPacket(&packet)) {
-        String::Builder buf;
-        buf.Write("mouse:");
-        buf.Write("\n");
-        buf.Write("dx: ");
-        buf.Write(String::Pad(String::Hex(packet.dx), 16));
-        buf.Write("\n");
-        buf.Write("dy: ");
-        buf.Write(String::Pad(String::Hex(packet.dy), 16));
-        Graphics::DrawString(100, 200, buf.Collect());
-        count += 1;
+    if (Mouse::ReadPacket(&packet)) {
+        MouseEvent ev;
+        ev.pos.X = packet.dx;
+        ev.pos.Y = packet.dy;
+        if (packet.buttons == Mouse::Button::Left) {
+            ev.button = 0;
+        } else if (packet.buttons == Mouse::Button::Right) {
+            ev.button = 1;
+        } else {
+            ev.button = 0xFF;
+        }
+        Events::Mouse->Write(ev);
     }
-    String::Builder buf;
-    buf.Write(String(count));
-    buf.Write(" packets received");
-    Graphics::DrawString(100, 350, buf.Collect());
 }
 
 void DrawBackground() {

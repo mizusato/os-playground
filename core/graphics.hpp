@@ -11,8 +11,11 @@ class Point {
 public:
     Number X;
     Number Y;
+    Point(): X(0), Y(0) {};
     Point(Number x, Number y): X(x), Y(y) {};
 };
+Point operator + (Point a, Point b);
+Point operator - (Point a, Point b);
 
 class Color {
 public:
