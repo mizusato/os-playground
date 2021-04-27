@@ -16,7 +16,7 @@ public:
     virtual void DispatchEvent(KeyboardEvent ev) = 0;
     virtual void DispatchEvent(MouseEvent ev) = 0;
     struct Flags {
-        bool  background; 
+        bool  background = false; 
     } flags;
     bool Contains(Point p) const;
 };

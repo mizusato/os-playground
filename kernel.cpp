@@ -13,7 +13,9 @@
 
 class BackgroundWindow final: public Window {
 public:
-    BackgroundWindow(Point size): Window(Point(0,0), size) {};
+    BackgroundWindow(Point size): Window(Point(0,0), size) {
+        flags.background = true;
+    };
     ~BackgroundWindow() {};
     void Render(Canvas& target, bool _) override {
         Number h = target.Height();
@@ -81,7 +83,8 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     Timer::Init();
     Keyboard::Init();
     Mouse::Init();
-    BackgroundWindow win_bg(Point(Graphics::ScreenWidth(), Graphics::ScreenHeight()));
+    Point screen_size(Graphics::ScreenWidth(), Graphics::ScreenHeight());
+    BackgroundWindow win_bg(screen_size);
     WindowManager::Add(&win_bg);
     Byte stub[] = "stub";
     {
@@ -139,21 +142,13 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         }
         TextWindow::Add(Point(320, 400), Point(600, 240), buf.Collect());
     }
-    {
-        String::Builder buf;
-        HeapStatus status = Heap::GetStatus();
-        buf.Write("heap chunks: ");
-        buf.Write(String(status.ChunksTotal));
-        buf.Write("\n");
-        buf.Write("heap size: ");
-        buf.Write(String::ReadableSize(status.ChunksTotal * sizeof(Chunk)));
-        TextWindow::Add(Point(280,660), Point(400, 90), buf.Collect());
-    }
+    auto win_mem = TextWindow::Add(Point(280,660), Point(600, 90), "");
     auto win_timer = TextWindow::Add(Point(80, 600), Point(100, 60), "");
     auto win_keyboard = TextWindow::Add(Point(100, 150), Point(200, 50), "");
-    auto win_mouse = TextWindow::Add(Point(60, 250), Point(240, 150), "");
+    auto win_mouse = TextWindow::Add(Point(60, 250), Point(240, 180), "");
     WindowManager::RenderAll(*Graphics::GetScreenCanvas());
     Graphics::FlushScreenCanvas();
+    Point cursor_pos((screen_size.X / 2), (screen_size.Y / 2));
     bool event_emitted;
     while(true) {
         event_emitted = false;
@@ -172,6 +167,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
                 if (key == 0) {
                     continue;
                 }
+                WindowManager::DispatchEvent(ev);
                 String::Builder buf;
                 buf.Write(String::Chr(key));
                 buf.Write(" ");
@@ -183,19 +179,47 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             MouseEvent ev;
             while(Events::Mouse->Read(&ev)) {
                 event_emitted = true;
+                cursor_pos = (cursor_pos + ev.pos); // TODO: SignedAddition
+                if (cursor_pos.X >= screen_size.X) { cursor_pos.X = screen_size.X - 1; }
+                if (cursor_pos.Y >= screen_size.Y) { cursor_pos.Y = screen_size.Y - 1; }
+                ev.pos = cursor_pos;
+                WindowManager::DispatchEvent(ev);
                 String::Builder buf;
                 buf.Write("mouse:");
                 buf.Write("\n");
-                buf.Write("dx: ");
-                buf.Write(String::Pad(String::Hex(ev.pos.X), 16));
+                buf.Write("x: ");
+                buf.Write(String(ev.pos.X));
                 buf.Write("\n");
-                buf.Write("dy: ");
-                buf.Write(String::Pad(String::Hex(ev.pos.Y), 16));
+                buf.Write("y: ");
+                buf.Write(String(ev.pos.Y));
+                buf.Write("\n");
+                buf.Write("btn: ");
+                buf.Write(String(ev.button));
                 win_mouse->SetText(buf.Collect());
             }
         }
         if (event_emitted) {
-            WindowManager::RenderAll(*Graphics::GetScreenCanvas());
+            {
+                String::Builder buf;
+                HeapStatus status = Heap::GetStatus();
+                buf.Write("heap chunks: ");
+                buf.Write(String(status.ChunksAvailable));
+                buf.Write("/");
+                buf.Write(String(status.ChunksTotal));
+                buf.Write("\n");
+                buf.Write("heap size: ");
+                buf.Write(String::ReadableSize(status.ChunksTotal * sizeof(Chunk)));
+                win_mem->SetText(buf.Collect());
+            }
+            Canvas* canvas = Graphics::GetScreenCanvas();
+            WindowManager::RenderAll(*canvas);
+            for (Number dy = 0; dy < 36; dy += 1) {
+                for (Number dx = 0; dx < 18; dx += 1) {
+                    Number x = cursor_pos.X + dx;
+                    Number y = cursor_pos.Y + dy;
+                    canvas->DrawPixel(x, y, 0x33, 0xFF, 0xA0, 0xFF);
+                }
+            }
             Graphics::FlushScreenCanvas();
         }
         __asm__("hlt");
@@ -231,7 +255,7 @@ void handleMouseInterrupt() {
     if (Mouse::ReadPacket(&packet)) {
         MouseEvent ev;
         ev.pos.X = packet.dx;
-        ev.pos.Y = packet.dy;
+        ev.pos.Y = ((~ packet.dy) + 1);
         if (packet.buttons == Mouse::Button::Left) {
             ev.button = 0;
         } else if (packet.buttons == Mouse::Button::Right) {

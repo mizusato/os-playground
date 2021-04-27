@@ -60,10 +60,14 @@ namespace WindowManager {
         }
     }
     void DispatchEvent(MouseEvent ev) {
+        auto reversed = Unique<List<Window*>>(new List<Window*>());
         for (auto it = windows->Iterate(); it->HasCurrent(); it->Proceed()) {
+            reversed->Prepend(it->Current());
+        }
+        for (auto it = reversed->Iterate(); it->HasCurrent(); it->Proceed()) {
             Window* current = it->Current();
             if (current->Contains(ev.pos)) {
-                if (current != activeWindow) {
+                if (current != activeWindow && ev.button == 0) {
                     Raise(current);
                 }
                 ev.pos = (ev.pos - current->position);
@@ -77,6 +81,6 @@ namespace WindowManager {
 bool Window::Contains(Point p) const {
     Point pos = this->position;
     Point bound = (pos + this->size);
-    return (pos.X <= p.X && p.X <= bound.X && pos.Y <= p.Y && p.Y <= bound.Y);
+    return (pos.X <= p.X && p.X < bound.X && pos.Y <= p.Y && p.Y < bound.Y);
 }
 
