@@ -63,6 +63,9 @@ namespace WindowManager {
         for (auto it = windows->Iterate(); it->HasCurrent(); it->Proceed()) {
             Window* current = it->Current();
             if (current->Contains(ev.pos)) {
+                if (current != activeWindow) {
+                    Raise(current);
+                }
                 ev.pos = (ev.pos - current->position);
                 current->DispatchEvent(ev);
                 break;

@@ -178,6 +178,15 @@ namespace Graphics {
     Number ScreenHeight() {
         return screen->Height();
     }
+    Font* GetBasicFont() {
+        return basic_font;
+    }
+    Canvas* GetScreenCanvas() {
+        return screen_draft_canvas;
+    }
+    void FlushScreenCanvas() {
+        screen->DraftCommit();
+    }
     void DrawPixel(Number x, Number y, Number r, Number g, Number b) {
         screen->DirectDrawPixel(x, y, r, g, b);
     }

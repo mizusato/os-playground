@@ -11,7 +11,63 @@
 #include "core/list.hpp"
 
 
-void DrawBackground();
+class BackgroundWindow final: public Window {
+public:
+    BackgroundWindow(Point size): Window(Point(0,0), size) {};
+    ~BackgroundWindow() {};
+    void Render(Canvas& target, bool _) override {
+        Number h = target.Height();
+        Number w = target.Width();
+        for (Number y = 0; y < h; y += 1) {
+            for (Number x = 0; x < w; x += 1) {
+                target.DrawPixel(x, y, 255, (x % 256), 64, 0xFF);
+            }
+        }
+    }
+    void DispatchEvent(KeyboardEvent ev) override {}
+    void DispatchEvent(MouseEvent ev) override {}
+};
+
+class TextWindow final: public Window {
+private:
+    String text;
+public:
+    TextWindow(Point position, Point size): Window(position, size), text("") {};
+    ~TextWindow() {};
+    void SetText(String new_text) {
+        text = new_text;
+    }
+    void Render(Canvas& target, bool active) override {
+        Color bg_inactive(0xFF, 0xFF, 0xFF, 0xFF);
+        Color bg_active(0xFE, 0xFE, 0xCD, 0xFF);
+        Color bg_titlebar(0x33, 0x33, 0xFF, 0xFF);
+        Number titlebar_size = 16;
+        Color bg = bg_inactive;
+        if (active) { bg = bg_active; }
+        Number h = target.Height();
+        Number w = target.Width();
+        for (Number y = 0; y < h; y += 1) {
+            for (Number x = 0; x < w; x += 1) {
+                if (y < titlebar_size) {
+                    target.DrawPixel(x, y, bg_titlebar.R, bg_titlebar.G, bg_titlebar.B, bg_titlebar.A);
+                } else {
+                    target.DrawPixel(x, y, bg.R, bg.G, bg.B, bg.A);
+                }
+            }
+        }
+        Color fg(0, 0, 0, 0xFF);
+        Font* font = Graphics::GetBasicFont();
+        target.FillText(Point(0,titlebar_size), fg, bg, *font, text);
+    }
+    void DispatchEvent(KeyboardEvent ev) override {}
+    void DispatchEvent(MouseEvent ev) override {}
+    static TextWindow* Add(Point pos, Point size, String text) {
+        auto w = new TextWindow(pos, size);
+        w->SetText(text);
+        WindowManager::Add(w);
+        return w;
+    }
+};
 
 extern "C"
 void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
@@ -25,7 +81,8 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     Timer::Init();
     Keyboard::Init();
     Mouse::Init();
-    DrawBackground();
+    BackgroundWindow win_bg(Point(Graphics::ScreenWidth(), Graphics::ScreenHeight()));
+    WindowManager::Add(&win_bg);
     Byte stub[] = "stub";
     {
         String::Builder buf;
@@ -34,7 +91,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         buf.Write("\n");
         buf.Write("stub addr: ");
         buf.Write(String::ReadableSize((Number) &stub));
-        Graphics::DrawString(400, 100, buf.Collect());
+        TextWindow::Add(Point(400, 100), Point(500, 90), buf.Collect());
     }
     {
         static const char* MemoryKindNames[] = { MEMORY_KIND_NAMES };
@@ -59,32 +116,28 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             buf.Write(kindName);
             buf.Write("\n");
         }
-        Graphics::DrawString(300, 200, buf.Collect());
+        TextWindow::Add(Point(350, 200), Point(600, 200), buf.Collect());
     }
     {
         HeapStatus status = Heap::GetStatus();
         String::Builder buf;
         buf.Write("(consumed as static)");
         buf.Write("\n");
-        buf.Write("addr / size");
-        buf.Write("\n");
         buf.Write(String::ReadableSize(status.StaticPosition));
-        buf.Write(" / ");
+        buf.Write(" (");
         buf.Write(String::ReadableSize(status.StaticSize));
-        buf.Write("\n");
+        buf.Write(")\n");
         buf.Write("(consumed as chunks)");
-        buf.Write("\n");
-        buf.Write("addr / size");
         buf.Write("\n");
         Number n;
         const HeapMemoryInfo* info = Heap::GetInfo(&n);
         for (Number i = 0; i < n; i += 1) {
             buf.Write(String::ReadableSize(info[i].start));
-            buf.Write(" / ");
+            buf.Write(" (");
             buf.Write(String::ReadableSize(info[i].size));
-            buf.Write("\n");
+            buf.Write(")\n");
         }
-        Graphics::DrawString(300, 400, buf.Collect());
+        TextWindow::Add(Point(320, 400), Point(600, 240), buf.Collect());
     }
     {
         String::Builder buf;
@@ -94,33 +147,27 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         buf.Write("\n");
         buf.Write("heap size: ");
         buf.Write(String::ReadableSize(status.ChunksTotal * sizeof(Chunk)));
-        Graphics::DrawString(300, 675, buf.Collect());
+        TextWindow::Add(Point(280,660), Point(400, 90), buf.Collect());
     }
-    List<Number> l;
-    l.Append(1);
-    l.Append(2);
-    l.Append(3);
-    Unique<List<Number>> l2(new List<Number>());
-    l2->Append(4);
-    l2->Append(5);
-    l.AppendAll(std::move(l2));
-    char ch = 0;
-    for (auto it = l.Iterate(); it->HasCurrent(); it->Proceed()) {
-        Number n = it->Current();
-        ch = 'g' + static_cast<char>(n);
-        char str[2] = { ch, 0 };
-        Graphics::DrawString(200, 100+100*n, str);
-    }
+    auto win_timer = TextWindow::Add(Point(80, 600), Point(100, 60), "");
+    auto win_keyboard = TextWindow::Add(Point(100, 150), Point(200, 50), "");
+    auto win_mouse = TextWindow::Add(Point(60, 250), Point(240, 150), "");
+    WindowManager::RenderAll(*Graphics::GetScreenCanvas());
+    Graphics::FlushScreenCanvas();
+    bool event_emitted;
     while(true) {
+        event_emitted = false;
         {
             TimerEvent ev;
             while (Events::TimerSecond->Read(&ev)) {
-                Graphics::DrawString(750, 600, String(ev.count));
+                event_emitted = true;
+                win_timer->SetText(String(ev.count));
             }
         }
         {
             KeyboardEvent ev;
             while(Events::Keyboard->Read(&ev)) {
+                event_emitted = true;
                 Char key = ev.key;
                 if (key == 0) {
                     continue;
@@ -129,13 +176,13 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
                 buf.Write(String::Chr(key));
                 buf.Write(" ");
                 buf.Write(String::Hex(key));
-                Graphics::DrawString(100, 150, "    ");
-                Graphics::DrawString(100, 150, buf.Collect());
+                win_keyboard->SetText(buf.Collect());
             }
         }
         {
             MouseEvent ev;
             while(Events::Mouse->Read(&ev)) {
+                event_emitted = true;
                 String::Builder buf;
                 buf.Write("mouse:");
                 buf.Write("\n");
@@ -144,8 +191,12 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
                 buf.Write("\n");
                 buf.Write("dy: ");
                 buf.Write(String::Pad(String::Hex(ev.pos.Y), 16));
-                Graphics::DrawString(100, 200, buf.Collect());
+                win_mouse->SetText(buf.Collect());
             }
+        }
+        if (event_emitted) {
+            WindowManager::RenderAll(*Graphics::GetScreenCanvas());
+            Graphics::FlushScreenCanvas();
         }
         __asm__("hlt");
     };
@@ -190,14 +241,5 @@ void handleMouseInterrupt() {
         }
         Events::Mouse->Write(ev);
     }
-}
-
-void DrawBackground() {
-    for (Number y = 0; y < Graphics::ScreenHeight(); y += 1) {
-        for (Number x = 0; x < Graphics::ScreenWidth(); x += 1) {
-            Graphics::DrawPixel(x, y, 255, (x % 256), 64);
-        }
-    }
-    Graphics::DrawString(100, 100, "hello world");
 }
 

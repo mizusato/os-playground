@@ -7,6 +7,7 @@
 class Window {
 protected:
     Window(): position(Point(0,0)), size(Point(300,300)) {};
+    Window(Point position, Point size): position(position), size(size) {};
 public:
     Point position;
     Point size;

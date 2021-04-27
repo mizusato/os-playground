@@ -42,6 +42,9 @@ namespace Graphics {
     void Init(GraphicsInfo* gfxInfo);
     Number ScreenWidth();
     Number ScreenHeight();
+    Font* GetBasicFont();
+    Canvas* GetScreenCanvas();
+    void FlushScreenCanvas();
     void DrawPixel(Number x, Number y, Number r, Number g, Number b);
     void DrawString(Number base_x, Number base_y, String str);
 };
