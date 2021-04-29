@@ -18,7 +18,7 @@ cd "$BOOTLOADER_DIR" && ./build.sh && cd "$PROJECT_DIR" && \
 
 cp "$BOOTLOADER_DIR/build/EFI/BOOT/BOOTX64.EFI" "$ISO_DIR/EFI/BOOT/" && \
 
-rm "$OBJECTS_DIR"/*.o && \
+(rm "$OBJECTS_DIR"/*.o || exit 0) && \
 
 nasm -f elf64 "kernel.asm" -o "$OBJECTS_DIR/kernel.asm.o" && \
 

@@ -12,41 +12,25 @@
 #include "ui/windows.hpp"
 
 
-class TextWindow final: public Window {
+class TextWindow final: public BaseWindow {
 private:
     String text;
 public:
-    TextWindow(Point position, Point size): Window(position, size), text("") {};
+    TextWindow(Point pos, Point size, String title):
+        BaseWindow(pos, size, title, Options()), text("") {};
     ~TextWindow() {};
     void SetText(String new_text) {
         text = new_text;
     }
-    void Render(Canvas& target, bool active) override {
-        Color bg_inactive(0xFF, 0xFF, 0xFF, 0xFF);
-        Color bg_active(0xFE, 0xFE, 0xCD, 0xFF);
-        Color bg_titlebar(0x33, 0x33, 0xFF, 0xFF);
-        Number titlebar_size = 16;
-        Color bg = bg_inactive;
-        if (active) { bg = bg_active; }
-        Number h = target.Height();
-        Number w = target.Width();
-        for (Number y = 0; y < h; y += 1) {
-            for (Number x = 0; x < w; x += 1) {
-                if (y < titlebar_size) {
-                    target.DrawPixel(x, y, bg_titlebar.R, bg_titlebar.G, bg_titlebar.B, bg_titlebar.A);
-                } else {
-                    target.DrawPixel(x, y, bg.R, bg.G, bg.B, bg.A);
-                }
-            }
-        }
+    void RenderContent(Canvas& target, bool active) override {
         Color text_color(0, 0, 0, 0xFF);
         Font* font = GetPrimaryFont();
-        target.FillText(Point(0,titlebar_size), text_color, *font, text);
+        target.FillText(Point(6,4), text_color, *font, text);
     }
     void DispatchEvent(KeyboardEvent ev) override {}
     void DispatchEvent(MouseEvent ev) override {}
-    static TextWindow* Add(Point pos, Point size, String text) {
-        auto w = new TextWindow(pos, size);
+    static TextWindow* Add(Point pos, Point size, String title, String text) {
+        auto w = new TextWindow(pos, size, title);
         w->SetText(text);
         WindowManager::Add(w);
         return w;
@@ -76,7 +60,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         buf.Write("\n");
         buf.Write("stub addr: ");
         buf.Write(String::ReadableSize((Number) &stub));
-        TextWindow::Add(Point(400, 100), Point(500, 90), buf.Collect());
+        TextWindow::Add(Point(400, 100), Point(500, 90), "Stack", buf.Collect());
     }
     {
         static const char* MemoryKindNames[] = { MEMORY_KIND_NAMES };
@@ -101,7 +85,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             buf.Write(kindName);
             buf.Write("\n");
         }
-        TextWindow::Add(Point(350, 200), Point(600, 200), buf.Collect());
+        TextWindow::Add(Point(350, 200), Point(600, 200), "Memory Info - EFI", buf.Collect());
     }
     {
         HeapStatus status = Heap::GetStatus();
@@ -122,12 +106,12 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             buf.Write(String::ReadableSize(info[i].size));
             buf.Write(")\n");
         }
-        TextWindow::Add(Point(320, 400), Point(600, 240), buf.Collect());
+        TextWindow::Add(Point(320, 400), Point(600, 240), "Memory Info - Kernel", buf.Collect());
     }
-    auto win_mem = TextWindow::Add(Point(280,660), Point(600, 90), "");
-    auto win_timer = TextWindow::Add(Point(80, 600), Point(100, 60), "");
-    auto win_keyboard = TextWindow::Add(Point(100, 150), Point(200, 50), "");
-    auto win_mouse = TextWindow::Add(Point(60, 250), Point(240, 180), "");
+    auto win_mem = TextWindow::Add(Point(280,620), Point(600, 90), "Heap", "");
+    auto win_timer = TextWindow::Add(Point(80, 600), Point(100, 60), "Timer", "");
+    auto win_keyboard = TextWindow::Add(Point(100, 150), Point(200, 50), "Keyboard", "");
+    auto win_mouse = TextWindow::Add(Point(60, 250), Point(240, 180), "Mouse", "");
     WindowManager::RenderAll(*Graphics::GetScreenCanvas());
     Graphics::FlushScreenCanvas();
     Point cursor_pos((screen_size.X / 2), (screen_size.Y / 2));
@@ -220,8 +204,10 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
 }
 
 void handlePanicInterrupt() {
-    Graphics::DrawString(150, 150, Panic::GetMessageTitle());
-    Graphics::DrawString(150, 186, Panic::GetMessageDetail());
+    Color red(0xFF, 0x33, 0x33, 0xFF);
+    Color gray(0x33, 0x33, 0x33, 0xFF);
+    Graphics::DrawString(150, 150, red, Panic::GetMessageTitle());
+    Graphics::DrawString(150, 186, gray, Panic::GetMessageDetail());
 }
 
 void handleTimerInterrupt() {

@@ -155,9 +155,11 @@ public:
     ~ScreenRawCanvas() {};
     Number Width() const override { return screen->Width(); }
     Number Height() const override { return screen->Height(); }
-    void DrawPixel(Number x, Number y, Number r, Number g, Number b, Number _) override {
+    void DrawPixel(Number x, Number y, Number r, Number g, Number b, Number a) override {
         if (x < Width() && y < Height()) {
-            screen->DirectDrawPixel(x, y, r, g, b);
+            if (a != 0) {
+                screen->DirectDrawPixel(x, y, r, g, b);
+            }
         }
     }
 };
@@ -214,15 +216,13 @@ namespace Graphics {
     void DrawPixel(Number x, Number y, Number r, Number g, Number b) {
         screen->DirectDrawPixel(x, y, r, g, b);
     }
-    void DrawString(Number base_x, Number base_y, String str) {
-        for (Number dy = 0; dy < basic_font->Height(); dy += 1) {
-            for (Number x = 0; x < screen->Width(); x += 1) {
-                screen->DirectDrawPixel(x, (base_y + dy), 0xFF, 0xFF, 0xFF);
-            }
-        }
+    void DrawString(Number base_x, Number base_y, Color color, String str) {
+        Number bg_w = screen->Width();
+        Number bg_h = basic_font->Height();
+        Color bg_color(0xFF, 0xFF, 0xFF, 0xFF);
+        screen_raw_canvas->FillRect(Point(0, base_y), Point(bg_w, bg_h), bg_color);
         Point pos(base_x, base_y);
-        Color black(0, 0, 0, 0xFF);
-        screen_raw_canvas->FillText(pos, black, *basic_font, str);
+        screen_raw_canvas->FillText(pos, color, *basic_font, str);
     }
 };
 
@@ -252,6 +252,18 @@ public:
 
 Unique<Canvas> Canvas::SliceView(Point pos, Point size) {
     return Unique<Canvas>(new CanvasSlice(this, pos, size));
+}
+
+void Canvas::FillRect(Point pos, Point size, Color color) {
+    Number base_x = pos.X;
+    Number base_y = pos.Y;
+    for (Number dy = 0; dy < size.Y; dy += 1) {
+        for (Number dx = 0; dx < size.X; dx += 1) {
+            Number x = (base_x + dx);
+            Number y = (base_y + dy);
+            DrawPixel(x, y, color.R, color.G, color.B, color.A);
+        }
+    }
 }
 
 void Canvas::FillText(Point pos, Color color, const Font& font, String text) {

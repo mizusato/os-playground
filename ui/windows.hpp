@@ -15,10 +15,32 @@ public:
 };
 
 class BaseWindow: public Window {
+public:
+    struct Options {
+        bool    closable;
+        Number  borderSize;
+        Number  titleHeight;
+        Color   borderColor;
+        Color   titleColorInactive;
+        Color   titleColorActive;
+        Color   titleFontColor;
+        Color   contentColor;
+        Options();
+    };
 protected:
-    BaseWindow();
+    Unique<Options> opts;
+    String title;
+    BaseWindow(Point pos, Point size, String title, Options opts);
 public:
     virtual ~BaseWindow() {};
+    void GetContentArea(Point* start, Point* span);
+    void Render(Canvas& target, bool active);
+    void DispatchEvent(KeyboardEvent ev);
+    void DispatchEvent(MouseEvent ev);
+    virtual void RenderContent(Canvas& target, bool active) {};
+    virtual void DispatchContentEvent(KeyboardEvent ev) {};
+    virtual void DispatchContentEvent(MouseEvent ev) {};
+    // TODO: virtual void HandleClose
 };
 
 #endif
