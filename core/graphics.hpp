@@ -35,7 +35,7 @@ public:
     virtual Number Height() const = 0;
     virtual void DrawPixel(Number x, Number y, Number r, Number g, Number b, Number a) = 0;
     Unique<Canvas> SliceView(Point pos, Point size);
-    void FillText(Point pos, Color fg, Color bg, const Font& font, String text);
+    void FillText(Point pos, Color color, const Font& font, String text);
 };
 
 namespace Graphics {

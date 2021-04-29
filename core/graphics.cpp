@@ -35,7 +35,7 @@ class PFH_RGB final: public PixelFormatHandler {
         return (r | (g << 8) | (b << 16));
     }
     void ReadPixel(Dword p, Byte* r, Byte* g, Byte* b) override {
-        *r = (p & 0xFF); *g = (p & 0xFF00); *b = (p & 0xFF0000);
+        *r = (p & 0xFF); *g = ((p & 0xFF00) >> 8); *b = ((p & 0xFF0000) >> 16);
     }
 };
 class PFH_BGR final: public PixelFormatHandler {
@@ -43,7 +43,7 @@ class PFH_BGR final: public PixelFormatHandler {
         return (b | (g << 8) | (r << 16));
     }
     void ReadPixel(Dword p, Byte* r, Byte* g, Byte* b) override {
-        *r = (p & 0xFF0000); *g = (p & 0xFF00); *b = (p & 0xFF);
+        *r = ((p & 0xFF0000) >> 16); *g = ((p & 0xFF00) >> 8); *b = (p & 0xFF);
     }
 };
 class PFH_Unsupported: public PixelFormatHandler {
@@ -215,10 +215,14 @@ namespace Graphics {
         screen->DirectDrawPixel(x, y, r, g, b);
     }
     void DrawString(Number base_x, Number base_y, String str) {
+        for (Number dy = 0; dy < basic_font->Height(); dy += 1) {
+            for (Number x = 0; x < screen->Width(); x += 1) {
+                screen->DirectDrawPixel(x, (base_y + dy), 0xFF, 0xFF, 0xFF);
+            }
+        }
         Point pos(base_x, base_y);
         Color black(0, 0, 0, 0xFF);
-        Color white(0xFF, 0xFF, 0xFF, 0xFF);
-        screen_raw_canvas->FillText(pos, black, white, *basic_font, str);
+        screen_raw_canvas->FillText(pos, black, *basic_font, str);
     }
 };
 
@@ -250,7 +254,7 @@ Unique<Canvas> Canvas::SliceView(Point pos, Point size) {
     return Unique<Canvas>(new CanvasSlice(this, pos, size));
 }
 
-void Canvas::FillText(Point pos, Color fg, Color bg, const Font& font, String text) {
+void Canvas::FillText(Point pos, Color color, const Font& font, String text) {
     Number w = font.Width(),
            h = font.Height();
     Number base_x = pos.X,
@@ -266,15 +270,12 @@ void Canvas::FillText(Point pos, Color fg, Color bg, const Font& font, String te
         }
         for (Number dy = 0; dy < h; dy += 1) {
             for (Number dx = 0; dx < w; dx += 1) {
-                Byte p = font.GetPixel(ch, dx, dy);
-                Byte alpha = (0xFF - p);
                 Number x = base_x + (i * w) + dx;
                 Number y = base_y + (j * h) + dy;
-                Byte a = (fg.A < alpha)? fg.A: alpha;
-                Byte r = ApplyAlpha(fg.R, bg.R, a);
-                Byte g = ApplyAlpha(fg.G, bg.G, a);
-                Byte b = ApplyAlpha(fg.B, bg.B, a);
-                DrawPixel(x, y, r, g, b, bg.A);
+                Byte p = font.GetPixel(ch, dx, dy);
+                Byte data_alpha = (0xFF - p);
+                Number a = (Number(color.A) * Number(data_alpha) / 255);
+                DrawPixel(x, y, color.R, color.G, color.B, a);
             }
         }
         i++;

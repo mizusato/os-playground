@@ -8,27 +8,9 @@
 #include "core/timer.hpp"
 #include "core/keyboard.hpp"
 #include "core/mouse.hpp"
-#include "ui/font.hpp"
+#include "ui/fonts.hpp"
+#include "ui/windows.hpp"
 
-
-class BackgroundWindow final: public Window {
-public:
-    BackgroundWindow(Point size): Window(Point(0,0), size) {
-        flags.background = true;
-    };
-    ~BackgroundWindow() {};
-    void Render(Canvas& target, bool _) override {
-        Number h = target.Height();
-        Number w = target.Width();
-        for (Number y = 0; y < h; y += 1) {
-            for (Number x = 0; x < w; x += 1) {
-                target.DrawPixel(x, y, 255, (x % 256), 64, 0xFF);
-            }
-        }
-    }
-    void DispatchEvent(KeyboardEvent ev) override {}
-    void DispatchEvent(MouseEvent ev) override {}
-};
 
 class TextWindow final: public Window {
 private:
@@ -57,9 +39,9 @@ public:
                 }
             }
         }
-        Color fg(0, 0, 0, 0xFF);
+        Color text_color(0, 0, 0, 0xFF);
         Font* font = GetPrimaryFont();
-        target.FillText(Point(0,titlebar_size), fg, bg, *font, text);
+        target.FillText(Point(0,titlebar_size), text_color, *font, text);
     }
     void DispatchEvent(KeyboardEvent ev) override {}
     void DispatchEvent(MouseEvent ev) override {}
@@ -84,7 +66,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     Keyboard::Init();
     Mouse::Init();
     Point screen_size(Graphics::ScreenWidth(), Graphics::ScreenHeight());
-    BackgroundWindow win_bg(screen_size);
+    BackgroundWindow win_bg(Color(0x33, 0x33, 0xA3, 0xFF), screen_size);
     WindowManager::Add(&win_bg);
     Byte stub[] = "stub";
     {

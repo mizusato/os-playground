@@ -1,5 +1,5 @@
-#ifndef UI_FONT_HPP
-#define UI_FONT_HPP
+#ifndef UI_FONTS_HPP
+#define UI_FONTS_HPP
 
 #include "../core/font.hpp"
 
