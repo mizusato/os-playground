@@ -179,9 +179,20 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             MouseEvent ev;
             while(Events::Mouse->Read(&ev)) {
                 event_emitted = true;
-                cursor_pos = (cursor_pos + ev.pos); // TODO: SignedAddition
-                if (cursor_pos.X >= screen_size.X) { cursor_pos.X = screen_size.X - 1; }
-                if (cursor_pos.Y >= screen_size.Y) { cursor_pos.Y = screen_size.Y - 1; }
+                Number x = cursor_pos.X;
+                Number y = cursor_pos.Y;
+                Number new_x = (x + ev.pos.X);
+                Number new_y = (y + ev.pos.Y);
+                if (
+                    (new_x >= screen_size.X)
+                    || (new_y >= screen_size.Y)
+                    || ((new_x > x) && ((new_x - x) >= screen_size.X))
+                    || ((x > new_x) && ((x - new_x) >= screen_size.X))
+                    || ((new_y > y) && ((new_y - y) >= screen_size.Y))
+                    || ((y > new_y) && ((y - new_y) >= screen_size.Y)) ) {
+                    continue;
+                }
+                cursor_pos = Point(new_x, new_y);
                 ev.pos = cursor_pos;
                 WindowManager::DispatchEvent(ev);
                 String::Builder buf;

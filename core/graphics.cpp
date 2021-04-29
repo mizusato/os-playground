@@ -60,31 +60,36 @@ protected:
     GraphicsInfo gfxInfo;
     PixelFormatHandler* pfh;
     Dword* draftBuffer;
-    bool*  draftRowDirty;
-    bool   draftDirty;
+    Dword* mirrorBuffer;
+    bool*  mirrorRowDirty;
+    bool   mirrorDirty;
     void initPixelFormatHandler() {
         PixelFormat pf = gfxInfo.pixelFormat;
         if (pf == PF_RGB) { pfh = new PFH_RGB; } else
         if (pf == PF_BGR) { pfh = new PFH_BGR; } else
                           { pfh = new PFH_Unsupported; }
     }
-    void initDraftBuffer() {
+    void initBuffers() {
         Number numberOfPixels = (gfxInfo.screenHeight * gfxInfo.screenBufferWidth);
         void* area = Heap::RequestStatic(numberOfPixels * sizeof(Dword));
         draftBuffer = reinterpret_cast<Dword*>(area);
+        area = Heap::RequestStatic(numberOfPixels * sizeof(Dword));
+        mirrorBuffer = reinterpret_cast<Dword*>(area);
         for (Number i = 0; i < numberOfPixels; i += 1) {
             draftBuffer[i] = 0;
+            mirrorBuffer[i] = 0;
         }
         area = Heap::RequestStatic(gfxInfo.screenHeight * sizeof(bool));
-        draftRowDirty = reinterpret_cast<bool*>(area);
+        mirrorRowDirty = reinterpret_cast<bool*>(area);
         for (Number i = 0; i < gfxInfo.screenHeight; i += 1) {
-            draftRowDirty[i] = false;
+            mirrorRowDirty[i] = false;
         }
+        mirrorDirty = false;
     }
 public:
     Screen(GraphicsInfo* gfxInfo): gfxInfo(*gfxInfo) {
         initPixelFormatHandler();
-        initDraftBuffer();
+        initBuffers();
     };
     virtual ~Screen() {
         delete pfh;
@@ -102,8 +107,6 @@ public:
         Dword pixel = pfh->MakePixel(r, g, b);
         Dword* currentPixel = &draftBuffer[x + (y * gfxInfo.screenBufferWidth)];
         if (pixel != *currentPixel) {
-            draftRowDirty[y] = true;
-            draftDirty = true;
             if (a == 0xFF) {
                 *currentPixel = pixel;
             } else {
@@ -117,14 +120,26 @@ public:
         }
     }
     void DraftCommit() {
-        if (draftDirty) {
-            draftDirty = false;
+        for (Number y = 0; y < gfxInfo.screenHeight; y += 1) {
+            for (Number x = 0; x < gfxInfo.screenViewportWidth; x += 1) {
+                Number offset = (x + (y * gfxInfo.screenBufferWidth));
+                Dword* draftPixel = (draftBuffer + offset);
+                Dword* mirrorPixel = (mirrorBuffer + offset);
+                if (*draftPixel != *mirrorPixel) {
+                    mirrorDirty = true;
+                    mirrorRowDirty[y] = true;
+                    *mirrorPixel = *draftPixel;
+                }
+            }
+        }
+        if (mirrorDirty) {
+            mirrorDirty = false;
             for (Number y = 0; y < gfxInfo.screenHeight; y += 1) {
-                if (draftRowDirty[y]) {
-                    draftRowDirty[y] = false;
+                if (mirrorRowDirty[y]) {
+                    mirrorRowDirty[y] = false;
                     for (Number x = 0; x < gfxInfo.screenViewportWidth; x += 1) {
                         Number offset = (x + (y * gfxInfo.screenBufferWidth));
-                        gfxInfo.framebuffer[offset] = draftBuffer[offset];
+                        gfxInfo.framebuffer[offset] = mirrorBuffer[offset];
                     }
                 }
             }
@@ -141,7 +156,9 @@ public:
     Number Width() const override { return screen->Width(); }
     Number Height() const override { return screen->Height(); }
     void DrawPixel(Number x, Number y, Number r, Number g, Number b, Number _) override {
-        screen->DirectDrawPixel(x, y, r, g, b);
+        if (x < Width() && y < Height()) {
+            screen->DirectDrawPixel(x, y, r, g, b);
+        }
     }
 };
 
@@ -154,7 +171,9 @@ public:
     Number Width() const override { return screen->Width(); }
     Number Height() const override { return screen->Height(); }
     void DrawPixel(Number x, Number y, Number r, Number g, Number b, Number a) override {
-        screen->DraftSetPixel(x, y, r, g, b, a);
+        if (x < Width() && y < Height()) {
+            screen->DraftSetPixel(x, y, r, g, b, a);
+        }
     }
 };
 
@@ -171,6 +190,11 @@ namespace Graphics {
         screen_raw_canvas = new ScreenRawCanvas(screen);
         screen_draft_canvas = new ScreenDraftCanvas(screen);
         basic_font = new BasicFont;
+        for (Number y = 0; y < screen->Height(); y += 1) {
+            for (Number x = 0; x < screen->Width(); x += 1) {
+                screen->DirectDrawPixel(x, y, 0, 0, 0);
+            }
+        }
     }
     Number ScreenWidth() {
         return screen->Width();
