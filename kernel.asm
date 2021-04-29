@@ -123,6 +123,10 @@ PanicInterruptHandler:
     call handlePanicInterrupt
     hlt
 
+global PrimaryFontData
+PrimaryFontData:
+incbin "ui/primary.font.bin"
+
 ; Macro to build a GDT descriptor entry
 %define MAKE_GDT_DESC(base, limit, access, flags) \
     (((base & 0x00FFFFFF) << 16) | \

@@ -1,4 +1,3 @@
-#include "string.hpp"
 #include "font.hpp"
 
 
@@ -10,18 +9,16 @@ extern const Number BasicFontData[];
 Number BasicFont::Width() const { return BASIC_FONT_WIDTH; };
 Number BasicFont::Height() const { return BASIC_FONT_HEIGHT; };
 
-Font::Pixel BasicFont::GetPixel(Char ch, Number x, Number y) const {
+Byte BasicFont::GetPixel(Char ch, Number x, Number y) const {
     Number w = BASIC_FONT_WIDTH;
-    Pixel pixel = { 0xFF, 0 };
     const Number* data = BasicFont::GetCharData(ch);
     Number offset = (w - x - 1);
     if (data != nullptr) {
         if (data[y] & (1 << offset)) {
-            pixel.lightness = 0;
-            pixel.alpha = 0xFF;
+            return 0;
         }
     }
-    return pixel;
+    return 0xFF;
 }
 
 const Number* BasicFont::GetCharData(Char ch) {

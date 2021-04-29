@@ -19,7 +19,7 @@ Byte ApplyAlpha(Byte fg_, Byte bg_, Byte alpha_) {
 Byte ApplyLightness(Byte scalar_, Byte l_) {
     double scalar = (double)(scalar_);
     double l = ((double)(l_) / 255);
-    return (Byte)(Number)(scalar * l);
+    return (Byte)(Number)(255 - ((255 - scalar) * (1 - l)));
 }
 
 class PixelFormatHandler {
@@ -266,17 +266,14 @@ void Canvas::FillText(Point pos, Color fg, Color bg, const Font& font, String te
         }
         for (Number dy = 0; dy < h; dy += 1) {
             for (Number dx = 0; dx < w; dx += 1) {
-                Font::Pixel p = font.GetPixel(ch, dx, dy);
+                Byte p = font.GetPixel(ch, dx, dy);
+                Byte alpha = (0xFF - p);
                 Number x = base_x + (i * w) + dx;
                 Number y = base_y + (j * h) + dy;
-                Byte l = p.lightness;
-                Byte fg_r = ApplyLightness(fg.R, l);
-                Byte fg_g = ApplyLightness(fg.G, l);
-                Byte fg_b = ApplyLightness(fg.B, l);
-                Byte a = (fg.A < p.alpha)? fg.A: p.alpha;
-                Byte r = ApplyAlpha(fg_r, bg.R, a);
-                Byte g = ApplyAlpha(fg_g, bg.G, a);
-                Byte b = ApplyAlpha(fg_b, bg.B, a);
+                Byte a = (fg.A < alpha)? fg.A: alpha;
+                Byte r = ApplyAlpha(fg.R, bg.R, a);
+                Byte g = ApplyAlpha(fg.G, bg.G, a);
+                Byte b = ApplyAlpha(fg.B, bg.B, a);
                 DrawPixel(x, y, r, g, b, bg.A);
             }
         }

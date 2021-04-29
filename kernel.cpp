@@ -8,7 +8,7 @@
 #include "core/timer.hpp"
 #include "core/keyboard.hpp"
 #include "core/mouse.hpp"
-#include "core/list.hpp"
+#include "ui/font.hpp"
 
 
 class BackgroundWindow final: public Window {
@@ -58,7 +58,7 @@ public:
             }
         }
         Color fg(0, 0, 0, 0xFF);
-        Font* font = Graphics::GetBasicFont();
+        Font* font = GetPrimaryFont();
         target.FillText(Point(0,titlebar_size), fg, bg, *font, text);
     }
     void DispatchEvent(KeyboardEvent ev) override {}
