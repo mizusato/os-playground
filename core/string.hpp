@@ -41,6 +41,7 @@ public:
     String(Unique<List<Char>> list);
     static String Chr(Char ch);
     explicit String(Number n);
+    explicit String(bool p);
     static String Hex(Number n);
     static String Oct(Number n);
     static String Bin(Number n);

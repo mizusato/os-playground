@@ -59,16 +59,27 @@ namespace WindowManager {
             activeWindow->DispatchEvent(ev);
         }
     }
-    void DispatchEvent(MouseEvent ev) {
+    void DispatchEvent(MouseEvent ev, MouseEvent prev_ev) {
         auto reversed = Unique<List<Window*>>(new List<Window*>());
         for (auto it = windows->Iterate(); it->HasCurrent(); it->Proceed()) {
             reversed->Prepend(it->Current());
         }
         for (auto it = reversed->Iterate(); it->HasCurrent(); it->Proceed()) {
             Window* current = it->Current();
+            if (current->Contains(prev_ev.pos)) {
+                if (!(current->Contains(ev.pos))) {
+                    MouseEvent out_ev;
+                    out_ev.pos = prev_ev.pos;
+                    out_ev.out = true;
+                    current->DispatchEvent(ev);
+                }
+            }
             if (current->Contains(ev.pos)) {
-                if (current != activeWindow && ev.button == 0) {
+                if (current != activeWindow && ev.down) {
                     Raise(current);
+                }
+                if (!(current->Contains(prev_ev.pos))) {
+                    ev.in = true;
                 }
                 ev.pos = (ev.pos - current->position);
                 current->DispatchEvent(ev);

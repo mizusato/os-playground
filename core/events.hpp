@@ -13,7 +13,12 @@ struct KeyboardEvent {
 
 struct MouseEvent {
     Point   pos;
-    Number  button;  // TODO: bool: btnLeft, btnRight, down, up, in, out
+    bool    btnLeft = false;
+    bool    btnRight = false;
+    bool    down = false;
+    bool    up = false;
+    bool    in = false;
+    bool    out = false;
 } __attribute__((packed));
 
 struct TimerEvent {

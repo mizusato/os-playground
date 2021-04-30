@@ -28,7 +28,7 @@ namespace WindowManager {
     void Raise(Window* window);
     void RenderAll(Canvas& canvas);
     void DispatchEvent(KeyboardEvent ev);
-    void DispatchEvent(MouseEvent ev);
+    void DispatchEvent(MouseEvent ev, MouseEvent prev_ev);
 };
 
 #endif

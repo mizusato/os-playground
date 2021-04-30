@@ -16,5 +16,13 @@ namespace Keyboard {
     Byte ReadInput() {
         return ScanCodeMap[PS2::ReadData()];
     }
+    void UpdateModifiers(Byte key, bool* ctrl, bool* alt, bool* shift) {
+        if (key == DN_C) { *ctrl = true; } else
+        if (key == UP_C) { *ctrl = false; } else
+        if (key == DN_A) { *alt = true; } else
+        if (key == UP_A) { *alt = false; } else
+        if (key == DN_S) { *shift = true; } else
+        if (key == UP_S) { *shift = false; }
+    }
 }
 

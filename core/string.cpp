@@ -49,6 +49,9 @@ void ListString::Iterator::Proceed() {
     iterator->Proceed();
 }
 
+String BoolToString(bool p);
+String::String(bool p): String(BoolToString(p)) {}
+
 String NumberToString(Number n, Number base);
 String::String(Number n): String(NumberToString(n, 10)) {}
 String String::Hex(Number n) { return NumberToString(n, 16); }
@@ -103,6 +106,14 @@ String String::Join(const List<String>& list, String sep) {
         buf.Write(it->Current());
     }
     return buf.Collect();
+}
+
+String BoolToString(bool p) {
+    if (p) {
+        return "True";
+    } else {
+        return "False";
+    }
 }
 
 String NumberToString(Number n, Number base) {

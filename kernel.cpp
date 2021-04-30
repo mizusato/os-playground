@@ -110,12 +110,14 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     }
     auto win_mem = TextWindow::Add(Point(280,620), Point(600, 90), "Heap", "");
     auto win_timer = TextWindow::Add(Point(80, 600), Point(100, 60), "Timer", "");
-    auto win_keyboard = TextWindow::Add(Point(100, 150), Point(200, 50), "Keyboard", "");
-    auto win_mouse = TextWindow::Add(Point(60, 250), Point(240, 180), "Mouse", "");
+    auto win_keyboard = TextWindow::Add(Point(100, 150), Point(200, 100), "Keyboard", "");
+    auto win_mouse = TextWindow::Add(Point(60, 300), Point(240, 180), "Mouse", "");
     WindowManager::RenderAll(*Graphics::GetScreenCanvas());
     Graphics::FlushScreenCanvas();
     Point cursor_pos((screen_size.X / 2), (screen_size.Y / 2));
     bool event_emitted;
+    MouseEvent prev_mouse_ev;
+    prev_mouse_ev.pos = cursor_pos;
     while(true) {
         event_emitted = false;
         {
@@ -130,14 +132,17 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             while(Events::Keyboard->Read(&ev)) {
                 event_emitted = true;
                 Char key = ev.key;
-                if (key == 0) {
-                    continue;
+                if (ev.shift && ('a' <= key && key <= 'z')) {
+                    key = ('A' + (key - 'a'));
                 }
                 WindowManager::DispatchEvent(ev);
                 String::Builder buf;
                 buf.Write(String::Chr(key));
                 buf.Write(" ");
                 buf.Write(String::Hex(key));
+                buf.Write("\n");
+                if (ev.ctrl) { buf.Write("[ctrl] "); }
+                if (ev.alt) { buf.Write("[alt] "); }
                 win_keyboard->SetText(buf.Collect());
             }
         }
@@ -160,7 +165,10 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
                 }
                 cursor_pos = Point(new_x, new_y);
                 ev.pos = cursor_pos;
-                WindowManager::DispatchEvent(ev);
+                if (!(prev_mouse_ev.btnLeft) && ev.btnLeft) { ev.down = true; }
+                if (prev_mouse_ev.btnLeft && !(ev.btnLeft)) { ev.up = true; }
+                WindowManager::DispatchEvent(ev, prev_mouse_ev);
+                prev_mouse_ev = ev;
                 String::Builder buf;
                 buf.Write("mouse:");
                 buf.Write("\n");
@@ -170,8 +178,8 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
                 buf.Write("y: ");
                 buf.Write(String(ev.pos.Y));
                 buf.Write("\n");
-                buf.Write("btn: ");
-                buf.Write(String(ev.button));
+                buf.Write("left: ");
+                buf.Write(String(ev.btnLeft));
                 win_mouse->SetText(buf.Collect());
             }
         }
@@ -223,10 +231,20 @@ void handleTimerInterrupt() {
 }
 
 void handleKeyboardInterrupt() {
+    static bool mod_ctrl = false;
+    static bool mod_alt = false;
+    static bool mod_shift = false;
     Byte key = Keyboard::ReadInput();
-    KeyboardEvent ev;
-    ev.key = static_cast<Char>(key);
-    Events::Keyboard->Write(ev);
+    if (key < ' ') {
+        Keyboard::UpdateModifiers(key, &mod_ctrl, &mod_alt, &mod_shift);
+    } else {
+        KeyboardEvent ev;
+        ev.key = static_cast<Char>(key);
+        ev.ctrl = mod_ctrl;
+        ev.alt = mod_alt;
+        ev.shift = mod_shift;
+        Events::Keyboard->Write(ev);
+    }
 }
 
 void handleMouseInterrupt() {
@@ -236,11 +254,9 @@ void handleMouseInterrupt() {
         ev.pos.X = packet.dx;
         ev.pos.Y = ((~ packet.dy) + 1);
         if (packet.buttons == Mouse::Button::Left) {
-            ev.button = 0;
+            ev.btnLeft = true;
         } else if (packet.buttons == Mouse::Button::Right) {
-            ev.button = 1;
-        } else {
-            ev.button = 0xFF;
+            ev.btnRight = true;
         }
         Events::Mouse->Write(ev);
     }

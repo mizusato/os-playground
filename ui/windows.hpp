@@ -40,7 +40,7 @@ public:
     virtual void RenderContent(Canvas& target, bool active) {};
     virtual void DispatchContentEvent(KeyboardEvent ev) {};
     virtual void DispatchContentEvent(MouseEvent ev) {};
-    // TODO: virtual void HandleClose
+    virtual void HandleClose() {};
 };
 
 #endif
