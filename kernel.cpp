@@ -27,8 +27,6 @@ public:
         Font* font = GetPrimaryFont();
         target.FillText(Point(6,4), text_color, *font, text);
     }
-    void DispatchEvent(KeyboardEvent ev) override {}
-    void DispatchEvent(MouseEvent ev) override {}
     static TextWindow* Add(Point pos, Point size, String title, String text) {
         auto w = new TextWindow(pos, size, title);
         w->SetText(text);
@@ -112,6 +110,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     auto win_timer = TextWindow::Add(Point(80, 600), Point(100, 60), "Timer", "");
     auto win_keyboard = TextWindow::Add(Point(100, 150), Point(200, 100), "Keyboard", "");
     auto win_mouse = TextWindow::Add(Point(60, 300), Point(240, 180), "Mouse", "");
+    // TODO: debugging log output window
     WindowManager::RenderAll(*Graphics::GetScreenCanvas());
     Graphics::FlushScreenCanvas();
     Point cursor_pos((screen_size.X / 2), (screen_size.Y / 2));
@@ -180,6 +179,9 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
                 buf.Write("\n");
                 buf.Write("left: ");
                 buf.Write(String(ev.btnLeft));
+                buf.Write("\n");
+                buf.Write("alt: ");
+                buf.Write(String(ev.alt));
                 win_mouse->SetText(buf.Collect());
             }
         }
@@ -230,19 +232,20 @@ void handleTimerInterrupt() {
     count = (count + 1) % 250;
 }
 
+bool ModCtrl = false;
+bool ModAlt = false;
+bool ModShift = false;
+
 void handleKeyboardInterrupt() {
-    static bool mod_ctrl = false;
-    static bool mod_alt = false;
-    static bool mod_shift = false;
     Byte key = Keyboard::ReadInput();
     if (key < ' ') {
-        Keyboard::UpdateModifiers(key, &mod_ctrl, &mod_alt, &mod_shift);
+        Keyboard::UpdateModifiers(key, &ModCtrl, &ModAlt, &ModShift);
     } else {
         KeyboardEvent ev;
         ev.key = static_cast<Char>(key);
-        ev.ctrl = mod_ctrl;
-        ev.alt = mod_alt;
-        ev.shift = mod_shift;
+        ev.ctrl = ModCtrl;
+        ev.alt = ModAlt;
+        ev.shift = ModShift;
         Events::Keyboard->Write(ev);
     }
 }
@@ -258,6 +261,8 @@ void handleMouseInterrupt() {
         } else if (packet.buttons == Mouse::Button::Right) {
             ev.btnRight = true;
         }
+        ev.ctrl = ModCtrl;
+        ev.alt = ModAlt;
         Events::Mouse->Write(ev);
     }
 }

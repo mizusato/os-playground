@@ -27,16 +27,22 @@ public:
         Color   contentColor;
         Options();
     };
+    struct State {
+        String  title;
+        bool    dragging;
+        Point   dragPoint;
+        State();
+    };
 protected:
     Unique<Options> opts;
-    String title;
+    Unique<State> state;
     BaseWindow(Point pos, Point size, String title, Options opts);
 public:
     virtual ~BaseWindow() {};
     void GetContentArea(Point* start, Point* span);
-    void Render(Canvas& target, bool active);
-    void DispatchEvent(KeyboardEvent ev);
-    void DispatchEvent(MouseEvent ev);
+    void Render(Canvas& target, bool active) override;
+    void DispatchEvent(KeyboardEvent ev) override;
+    void DispatchEvent(MouseEvent ev) override;
     virtual void RenderContent(Canvas& target, bool active) {};
     virtual void DispatchContentEvent(KeyboardEvent ev) {};
     virtual void DispatchContentEvent(MouseEvent ev) {};

@@ -19,6 +19,8 @@ struct MouseEvent {
     bool    up = false;
     bool    in = false;
     bool    out = false;
+    bool    ctrl = false;
+    bool    alt = false;
 } __attribute__((packed));
 
 struct TimerEvent {

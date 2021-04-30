@@ -5,6 +5,7 @@ typedef unsigned char Byte;
 typedef unsigned short int Word;
 typedef unsigned int Dword;
 typedef unsigned long int Number;
+typedef signed long int SignedNumber;
 
 #endif
 

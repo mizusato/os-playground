@@ -47,9 +47,15 @@ BaseWindow::Options::Options():
     titleFontColor(Color(0xFF, 0xFF, 0xFF, 0xFF)),
     contentColor(Color(0xEF, 0xEF, 0xEF, 0xFF)) {}
 
+BaseWindow::State::State():
+    title(""),
+    dragging(false) {}
+
 BaseWindow::BaseWindow(Point pos, Point size, String title, Options opts):
     Window(pos, (size + Point((opts.borderSize * 2), (opts.titleHeight + (opts.borderSize * 2))))),
-    opts(Unique<Options>(new Options(opts))), title(title) {};
+    opts(Unique<Options>(new Options(opts))), state(Unique<State>(new State)) {
+    state->title = title;
+};
 
 void BaseWindow::GetContentArea(Point* start, Point* span) {
     Number b = opts->borderSize;
@@ -74,7 +80,7 @@ void BaseWindow::Render(Canvas& target, bool active) {
     Color font_color = opts->titleFontColor;
     Number title_padding = ((t - font->Height()) / 2);
     Number p = (b + title_padding);
-    target.FillText(Point((p + b), p), font_color, *font, title);
+    target.FillText(Point((p + b), p), font_color, *font, state->title);
     if (opts->closable) {
         target.FillText(Point((size.X - (p + b) - font->Width()), p), font_color, *font, "X");
     }
@@ -89,6 +95,29 @@ void BaseWindow::DispatchEvent(KeyboardEvent ev) {
 }
 
 void BaseWindow::DispatchEvent(MouseEvent ev) {
-
+    if (state->dragging) {
+        if (!(ev.alt) || ev.up || ev.out) {
+            state->dragging = false;
+        } else {
+            auto ref_x = static_cast<SignedNumber>(state->dragPoint.X);
+            auto ref_y = static_cast<SignedNumber>(state->dragPoint.Y);
+            auto x = static_cast<SignedNumber>(ev.pos.X);
+            auto y = static_cast<SignedNumber>(ev.pos.Y);
+            auto dx = (x - ref_x);
+            auto dy = (y - ref_y);
+            auto new_x = (static_cast<SignedNumber>(position.X) + dx);
+            auto new_y = (static_cast<SignedNumber>(position.Y) + dy);
+            if (new_x < 0) { new_x = 0; }
+            if (new_y < 0) { new_y = 0; }
+            position = Point(Number(new_x), Number(new_y));
+        }
+    } else {
+        if (ev.down && ev.alt) {
+            state->dragging = true;
+            state->dragPoint = ev.pos;
+        } else {
+            // do nothing
+        }
+    }
 }
 

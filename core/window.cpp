@@ -71,7 +71,7 @@ namespace WindowManager {
                     MouseEvent out_ev;
                     out_ev.pos = prev_ev.pos;
                     out_ev.out = true;
-                    current->DispatchEvent(ev);
+                    current->DispatchEvent(out_ev);
                 }
             }
             if (current->Contains(ev.pos)) {
