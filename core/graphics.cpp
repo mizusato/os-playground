@@ -22,6 +22,11 @@ Byte ApplyLightness(Byte scalar_, Byte l_) {
     return (Byte)(Number)(255 - ((255 - scalar) * (1 - l)));
 }
 
+bool InArea(Point p, Point start, Point span) {
+    Point bound = (start + span);
+    return (start.X <= p.X && p.X < bound.X && start.Y <= p.Y && p.Y < bound.Y);
+}
+
 class PixelFormatHandler {
 protected:
     PixelFormatHandler() {};

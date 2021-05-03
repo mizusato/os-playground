@@ -16,6 +16,7 @@ public:
 } __attribute__((packed));
 Point operator + (Point a, Point b);
 Point operator - (Point a, Point b);
+bool InArea(Point p, Point start, Point span);
 
 class Color final {
 public:

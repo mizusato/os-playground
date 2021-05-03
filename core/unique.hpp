@@ -25,6 +25,7 @@ public:
         }
         ptr = another.ptr;
         another.ptr = nullptr;
+        return *this;
     };
     Unique(const Unique&) = delete;
     Unique& operator = (const Unique& another) = delete;

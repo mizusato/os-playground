@@ -10,22 +10,32 @@
 #include "core/mouse.hpp"
 #include "ui/fonts.hpp"
 #include "ui/windows.hpp"
+#include "ui/widgets.hpp"
 
 
 class TextWindow final: public BaseWindow {
 private:
-    String text;
+    struct State {
+        String text;
+        Unique<TextDisplay> display;
+        const Widget* focus = nullptr;
+        State(): text(""), display(Unique<TextDisplay>(new TextDisplay(&focus))) {}
+    };
+    Unique<State> state;
 public:
     TextWindow(Point pos, Point size, String title):
-        BaseWindow(pos, size, title, Options()), text("") {};
+        BaseWindow(pos, size, title, Options()),
+        state(new State) {};
     ~TextWindow() {};
     void SetText(String new_text) {
-        text = new_text;
+        state->text = new_text;
     }
     void RenderContent(Canvas& target, bool active) override {
-        Color text_color(0, 0, 0, 0xFF);
-        Font* font = GetPrimaryFont();
-        target.FillText(Point(6,4), text_color, *font, text);
+        Color color(0, 0, 0, 0xFF);
+        auto& display = state->display;
+        display->Clear();
+        display->Add(state->text, TextStyle(color));
+        display->Render(target, active);
     }
     static TextWindow* Add(Point pos, Point size, String title, String text) {
         auto w = new TextWindow(pos, size, title);
@@ -131,14 +141,12 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             while(Events::Keyboard->Read(&ev)) {
                 event_emitted = true;
                 Char key = ev.key;
-                if (ev.shift && ('a' <= key && key <= 'z')) {
-                    key = ('A' + (key - 'a'));
-                }
                 WindowManager::DispatchEvent(ev);
                 String::Builder buf;
                 buf.Write(String::Chr(key));
                 buf.Write(" ");
                 buf.Write(String::Hex(key));
+                if (ev.shift) { buf.Write(" + shift"); }
                 buf.Write("\n");
                 if (ev.ctrl) { buf.Write("[ctrl] "); }
                 if (ev.alt) { buf.Write("[alt] "); }
@@ -211,6 +219,11 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         }
         __asm__("hlt");
     };
+}
+
+extern "C" 
+void __cxa_pure_virtual() {
+    panic("pure virtual function called");
 }
 
 void handlePanicInterrupt() {

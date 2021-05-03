@@ -109,6 +109,7 @@ public:
         if (head == nullptr) {
             head = Heap::Allocate(1);
             ChunkData* data = reinterpret_cast<ChunkData*>(&(head->data));
+            data->elementAmount = 0;
             data->Set(0, element);
             data->elementAmount = 1;
             numberOfChunks = 1;
@@ -124,6 +125,7 @@ public:
             } else {
                 Chunk* new_head = Heap::Allocate(1);
                 ChunkData* data = reinterpret_cast<ChunkData*>(&(new_head->data));
+                data->elementAmount = 0;
                 data->Set(0, element);
                 data->elementAmount = 1;
                 Chunk* tail = head->previous;
@@ -140,6 +142,7 @@ public:
         if (head == nullptr) {
             head = Heap::Allocate(1);
             ChunkData* data = reinterpret_cast<ChunkData*>(&(head->data));
+            data->elementAmount = 0;
             data->Set(0, element);
             data->elementAmount = 1;
             numberOfChunks = 1;
@@ -153,6 +156,7 @@ public:
             } else {
                 Chunk* new_tail = Heap::Allocate(1);
                 ChunkData* data = reinterpret_cast<ChunkData*>(&(new_tail->data));
+                data->elementAmount = 0;
                 data->Set(0, element);
                 data->elementAmount = 1;
                 Chunk* tail = head->previous;

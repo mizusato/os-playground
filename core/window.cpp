@@ -90,8 +90,6 @@ namespace WindowManager {
 };
 
 bool Window::Contains(Point p) const {
-    Point pos = this->position;
-    Point bound = (pos + this->size);
-    return (pos.X <= p.X && p.X < bound.X && pos.Y <= p.Y && p.Y < bound.Y);
+    return InArea(p, position, size);
 }
 
