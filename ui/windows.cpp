@@ -91,7 +91,7 @@ void BaseWindow::Render(Canvas& target, bool active) {
 }
 
 void BaseWindow::DispatchEvent(KeyboardEvent ev) {
-
+    DispatchContentEvent(ev);
 }
 
 void BaseWindow::DispatchEvent(MouseEvent ev) {
@@ -116,7 +116,10 @@ void BaseWindow::DispatchEvent(MouseEvent ev) {
             state->dragging = true;
             state->dragPoint = ev.pos;
         } else {
-            // do nothing
+            Point start, span;
+            GetContentArea(&start, &span);
+            ev.pos = (ev.pos - start);
+            DispatchContentEvent(ev);
         }
     }
 }

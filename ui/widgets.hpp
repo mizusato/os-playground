@@ -21,6 +21,8 @@ private:
         Number num_of_columns;
         Number scroll_skip_rows;
         Number scroll_skip_columns;
+        Number current_viewport_rows;
+        Number current_viewport_columns;
         Unique<List<Line>> lines;
         State();
     };

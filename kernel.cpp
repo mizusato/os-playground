@@ -29,13 +29,22 @@ public:
     ~TextWindow() {};
     void SetText(String new_text) {
         state->text = new_text;
-    }
-    void RenderContent(Canvas& target, bool active) override {
-        Color color(0, 0, 0, 0xFF);
         auto& display = state->display;
+        Color color(0, 0, 0, 0xFF);
         display->Clear();
         display->Add(state->text, TextStyle(color));
+    }
+    void RenderContent(Canvas& target, bool active) override {
+        auto& display = state->display;
         display->Render(target, active);
+    }
+    void DispatchContentEvent(KeyboardEvent ev) override {
+        if (ev.ctrl) {
+            if (ev.key == 'p') { state->display->Scroll(TextDisplay::Up); } else
+            if (ev.key == 'n') { state->display->Scroll(TextDisplay::Down); } else
+            if (ev.key == 'f') { state->display->Scroll(TextDisplay::Right); } else
+            if (ev.key == 'b') { state->display->Scroll(TextDisplay::Left); }
+        }
     }
     static TextWindow* Add(Point pos, Point size, String title, String text) {
         auto w = new TextWindow(pos, size, title);
@@ -80,9 +89,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         Number base = (Number) memInfo->mapBuffer;
         for (Number ptr = base; (ptr - base) < memInfo->mapSize; ptr += memInfo->descSize) {
             MemoryDescriptor* desc = reinterpret_cast<MemoryDescriptor*>(ptr);
-            if ( ! ((desc->physicalStart >= 0x100000) &&
-                (desc->numberOfPages >= 256) &&
-                (desc->kind.value == MK_ConventionalMemory)) ) {
+            if (desc->physicalStart < 0x100000) {
                 continue;
             }
             const char* kindName = MemoryKindNames[desc->kind.raw];
