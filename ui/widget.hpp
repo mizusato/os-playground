@@ -1,8 +1,9 @@
-#ifndef WIDGET_HPP
-#define WIDGET_HPP
+#ifndef UI_WIDGET_HPP
+#define UI_WIDGET_HPP
 
 #include "../core/graphics.hpp"
 #include "../core/events.hpp"
+
 
 class Widget {
 public:

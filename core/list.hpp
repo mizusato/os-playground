@@ -11,8 +11,8 @@ class List {
 public:
     class Iterator {
     private:
-        const List* list = nullptr;
-        const Chunk* current = nullptr;
+        List* list = nullptr;
+        Chunk* current = nullptr;
         Number innerIndex = 0;
         Iterator() {}
         friend class List;
@@ -21,14 +21,14 @@ public:
         bool HasCurrent() const {
             return (current != nullptr);
         }
-        T Current() const {
+        T& Current() {
             if (!(HasCurrent())) { panic("invalid iterator usage"); }
-            const ChunkData* data = reinterpret_cast<const ChunkData*>(&(current->data));
+            ChunkData* data = reinterpret_cast<ChunkData*>(&(current->data));
             return data->Get(innerIndex);
         }
         void Proceed() {
             if (!(HasCurrent())) { panic("invalid iterator usage"); }
-            const ChunkData* data = reinterpret_cast<const ChunkData*>(&(current->data));
+            ChunkData* data = reinterpret_cast<ChunkData*>(&(current->data));
             if ((innerIndex + 1) < data->elementAmount) {
                 innerIndex += 1;
             } else {
@@ -46,10 +46,11 @@ public:
 private:
     Number elementPerChunk;
     Number numberOfChunks;
+    Number length;
     Chunk* head;
     struct ChunkData {
     public:
-        T Get(Number index) const {
+        T& Get(Number index) {
             return elements[index];
         }
         void Set(Number index, T value) {
@@ -77,6 +78,7 @@ public:
             elementPerChunk = 1;
         }
         numberOfChunks = 0;
+        length = 0;
         head = nullptr;
     }
     List(T one): List() {
@@ -98,7 +100,10 @@ public:
     bool NotEmpty() const {
         return (head != nullptr);
     }
-    Unique<Iterator> Iterate() const {
+    Number Length() const {
+        return length;
+    }
+    Unique<Iterator> Iterate() {
         Iterator *iterator = new Iterator;
         iterator->list = this;
         iterator->current = head;
@@ -106,6 +111,7 @@ public:
         return Unique<Iterator>(iterator);
     }
     void Prepend(T element) {
+        length += 1;
         if (head == nullptr) {
             head = Heap::Allocate(1);
             ChunkData* data = reinterpret_cast<ChunkData*>(&(head->data));
@@ -139,6 +145,7 @@ public:
         }
     }
     void Append(T element) {
+        length += 1;
         if (head == nullptr) {
             head = Heap::Allocate(1);
             ChunkData* data = reinterpret_cast<ChunkData*>(&(head->data));
@@ -170,6 +177,7 @@ public:
     }
     void AppendAll(Unique<List<T>> another_) {
         List* another = another_.get();
+        length += another->length;
         if (head == nullptr) {
             *this = *another;
         } else {

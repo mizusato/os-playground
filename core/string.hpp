@@ -47,7 +47,7 @@ public:
     static String Bin(Number n);
     static String ReadableSize(Number n);
     static String Pad(String s, Number n);
-    static String Join(const List<String>& list, String sep);
+    static String Join(List<String>& list, String sep);
 };
 
 class LegacyString final: public String::Impl {

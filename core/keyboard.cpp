@@ -14,15 +14,28 @@ namespace Keyboard {
         Interrupt::UnmaskIRQ(1);
     }
     Byte ReadInput() {
-        return ScanCodeMap[PS2::ReadData()];
+        Byte first = PS2::ReadData();
+        if (first != 0xE0) {
+            return ScanCodeMap[first];
+        } else {
+            Byte second = PS2::ReadData();
+            if (second == 0x48) { return KEY_UP; } else
+            if (second == 0x50) { return KEY_DOWN; } else
+            if (second == 0x4D) { return KEY_RIGHT; } else
+            if (second == 0x4B) { return KEY_LEFT; } else {
+                return 0;
+            }
+        }
     }
-    void UpdateModifiers(Byte key, bool* ctrl, bool* alt, bool* shift) {
+    bool UpdateModifiers(Byte key, bool* ctrl, bool* alt, bool* shift) {
         if (key == DN_C) { *ctrl = true; } else
         if (key == UP_C) { *ctrl = false; } else
         if (key == DN_A) { *alt = true; } else
         if (key == UP_A) { *alt = false; } else
         if (key == DN_S) { *shift = true; } else
-        if (key == UP_S) { *shift = false; }
+        if (key == UP_S) { *shift = false; } else
+        { return false; }
+        return true;
     }
 }
 

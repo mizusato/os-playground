@@ -97,7 +97,7 @@ String String::Pad(String s, Number n) {
     return buf.Collect();
 }
 
-String String::Join(const List<String>& list, String sep) {
+String String::Join(List<String>& list, String sep) {
     String::Builder buf;
     bool first = true;
     for (auto it = list.Iterate(); it->HasCurrent(); it->Proceed()) {

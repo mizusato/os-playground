@@ -1,3 +1,4 @@
+#include "../core/keyboard.hpp"
 #include "fonts.hpp"
 #include "widgets.hpp"
 
@@ -12,7 +13,8 @@ TextDisplay::State::State():
     lines(Unique<List<Line>>(new List<Line>())) {}
 
 TextDisplay::TextDisplay(const Widget** focus):
-    Widget(focus, false), state(Unique<State>(new State)) {}
+    Widget(focus, false),
+    state(Unique<State>(new State)) {}
 
 void TextDisplay::Render(Canvas& target, bool _) {
     Number scrollbar_size = 10;
@@ -80,7 +82,7 @@ void TextDisplay::Render(Canvas& target, bool _) {
 }
 
 void TextDisplay::ConsumeEvent(MouseEvent ev) {
-
+    // TODO
 }
 
 void TextDisplay::Add(String content, TextStyle style) {
@@ -141,5 +143,123 @@ void TextDisplay::Scroll(TextDisplay::ScrollDirection d) {
     } else if (d == Left) {
         if (cs > 0) { cs -= 1; }
     }
+}
+
+
+#define LINE_EDIT_PAD_Y 3
+
+LineEdit::State::State():
+    buffer(Unique<List<Char>>(new List<Char>())),
+    cursor_pos(0) {};
+
+LineEdit::LineEdit(const Widget** focus):
+    Widget(focus, true),
+    state(Unique<State>(new State)) {
+        size.Y = (GetPrimaryFont()->Height() + (2 * LINE_EDIT_PAD_Y));
+    };
+
+void LineEdit::CursorForward() {
+    if (state->cursor_pos < state->buffer->Length()) {
+        state->cursor_pos += 1;
+    }
+}
+
+void LineEdit::CursorBack() {
+    if (state->cursor_pos > 0) {
+        state->cursor_pos -= 1;
+    }   
+}
+
+void LineEdit::Input(Char ch) {
+    if (state->cursor_pos == state->buffer->Length()) {
+        state->buffer->Append(ch);
+    } else {
+        auto new_buffer = Unique<List<Char>>(new List<Char>());
+        Number i = 0;
+        for (auto it = state->buffer->Iterate(); it->HasCurrent(); it->Proceed(), i++) {
+            if (i == state->cursor_pos) {
+                new_buffer->Append(ch);
+            }
+            new_buffer->Append(it->Current());
+        }
+        state->buffer = std::move(new_buffer);
+    }
+    CursorForward();
+}
+
+void LineEdit::Backspace() {
+    auto new_buffer = Unique<List<Char>>(new List<Char>());
+    Number i = 0;
+    for (auto it = state->buffer->Iterate(); it->HasCurrent(); it->Proceed(), i++) {
+        if ((i + 1) != state->cursor_pos) {
+            new_buffer->Append(it->Current());
+        }
+    }
+    state->buffer = std::move(new_buffer);
+    CursorBack();
+}
+
+void LineEdit::Render(Canvas& target, bool window_active) {
+    bool show_cursor = (window_active && (*focus == this));
+    Font* font = GetPrimaryFont();
+    auto viewport_content = Unique<List<Char>>(new List<Char>());
+    viewport_content->Append('>');
+    viewport_content->Append('>');
+    viewport_content->Append(' ');
+    Number pw = viewport_content->Length();
+    Number w = target.Width();
+    Number h = target.Height();
+    Number pad_x = 6;
+    Number pad_y = LINE_EDIT_PAD_Y;
+    if (w <= (2 * pad_x)) { return; }
+    if (h <= (2 * pad_y)) { return; }
+    Number bw = font->Width();
+    Number raw_vw = ((w - (2 * pad_x)) / bw);
+    if (raw_vw <= pw) { return; }
+    Number vw = (raw_vw - pw);
+    Number cursor_page = (state->cursor_pos / vw);
+    Number cursor_offset = (state->cursor_pos % vw);
+    Number count = 0;
+    Number i = 0;
+    for (auto it = state->buffer->Iterate(); it->HasCurrent(); it->Proceed(), i++) {
+        if (count >= vw) { break; }
+        if (i < (cursor_page * vw)) { continue; }
+        viewport_content->Append(it->Current());
+        count += 1;
+    }
+    Number cursor_x = (pad_x + ((pw + cursor_offset) * bw));
+    Number cursor_w = 3;
+    Number cursor_h = font->Height();
+    Color black(0, 0, 0, 0xFF);
+    Color cursor_color(0xFF, 0x33, 0x33, 0xFF);
+    target.FillText(Point(pad_x, pad_y), black, *font, std::move(viewport_content));
+    if (show_cursor) {
+        target.FillRect(Point(cursor_x, pad_y), Point(cursor_w, cursor_h), cursor_color);
+    }
+}
+
+void LineEdit::ConsumeEvent(KeyboardEvent ev) {
+    if (!(ev.ctrl || ev.alt)) {
+        if (ev.key == KEY_LEFT) {
+            CursorBack();
+        } else if (ev.key == KEY_RIGHT) {
+            CursorForward();
+        } else if (' ' <= ev.key && ev.key <= '~') {
+            Char ch = ev.key;
+            if (ev.shift) {
+                if ('a' <= ch && ch <= 'z') {
+                    ch = ('A' + (ch - 'a'));
+                }
+                // TODO: symbols
+            }
+            Input(ch);
+        } else if (ev.key == 0x8) {
+            Backspace();
+        }
+    }
+}
+
+void LineEdit::ConsumeEvent(MouseEvent ev) {
+    // TODO
 }
 

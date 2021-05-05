@@ -11,6 +11,8 @@
 #include "ui/fonts.hpp"
 #include "ui/windows.hpp"
 #include "ui/widgets.hpp"
+#include "ui/log.hpp"
+#include "ui/console.hpp"
 
 
 class TextWindow final: public BaseWindow {
@@ -123,11 +125,15 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
         }
         TextWindow::Add(Point(320, 400), Point(600, 240), "Memory Info - Kernel", buf.Collect());
     }
-    auto win_mem = TextWindow::Add(Point(280,620), Point(600, 90), "Heap", "");
+    auto win_mem = TextWindow::Add(Point(280, 620), Point(600, 90), "Heap", "");
     auto win_timer = TextWindow::Add(Point(80, 600), Point(100, 60), "Timer", "");
     auto win_keyboard = TextWindow::Add(Point(100, 150), Point(200, 100), "Keyboard", "");
     auto win_mouse = TextWindow::Add(Point(60, 300), Point(240, 180), "Mouse", "");
-    // TODO: debugging log output window
+    BaseWindow::Options opts;
+    opts.closable = false;
+    LogViewer::Open(Point(600, 400), Point(300, 250), "Log Viewer", opts);
+    log("log test", LL_Debug);
+    Console::Open(Point(100, 100), Point(400, 300), "Console 0", opts);
     WindowManager::RenderAll(*Graphics::GetScreenCanvas());
     Graphics::FlushScreenCanvas();
     Point cursor_pos((screen_size.X / 2), (screen_size.Y / 2));
@@ -258,9 +264,9 @@ bool ModShift = false;
 
 void handleKeyboardInterrupt() {
     Byte key = Keyboard::ReadInput();
-    if (key < ' ') {
-        Keyboard::UpdateModifiers(key, &ModCtrl, &ModAlt, &ModShift);
-    } else {
+    if (key != 0) {
+        bool ok = Keyboard::UpdateModifiers(key, &ModCtrl, &ModAlt, &ModShift);
+        if (ok) { return; }
         KeyboardEvent ev;
         ev.key = static_cast<Char>(key);
         ev.ctrl = ModCtrl;

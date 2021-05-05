@@ -66,7 +66,7 @@ void LinearLayout::Render(Canvas& target, bool window_active) {
     }
     Number total_computed = 0;
     for (auto it = items->Iterate(); it->HasCurrent(); it->Proceed()) {
-        auto item = it->Current();
+        Item& item = it->Current();
         if (item.factor != 0) {
             Number computed = ((total * item.factor) / total_factor);
             item.computed = computed;
@@ -75,21 +75,29 @@ void LinearLayout::Render(Canvas& target, bool window_active) {
     }
     Number remainder = (total - total_computed);
     for (auto it = items->Iterate(); it->HasCurrent(); it->Proceed()) {
-        auto item = it->Current();
+        Item& item = it->Current();
         if (item.factor != 0) {
             item.computed += remainder;
             break;
         }
     }
+    Number pos_x = 0;
+    Number pos_y = 0;
     for (auto it = items->Iterate(); it->HasCurrent(); it->Proceed()) {
         auto item = it->Current();
         auto widget = item.widget;
+        widget->position = Point(pos_x, pos_y);
         if (item.factor != 0) {
             widget->size.X = horizontal? (item.computed): w;
             widget->size.Y = horizontal? h: (item.computed);
         } else {
             widget->size.X = horizontal? (widget->size.X): w;
             widget->size.Y = horizontal? h: (widget->size.Y);
+        }
+        if (horizontal) {
+            pos_x += widget->size.X;
+        } else {
+            pos_y += widget->size.Y;
         }
         auto viewport = target.SliceView(widget->position, widget->size);
         widget->Render(*viewport, window_active);
@@ -117,7 +125,11 @@ bool LinearLayout::DispatchFocus(const Widget** previous, bool reversed) {
 }
 
 void LinearLayout::DispatchEvent(KeyboardEvent ev) {
-    Widget::DispatchEvent(ev);
+    for (auto it = items->Iterate(); it->HasCurrent(); it->Proceed()) {
+        auto item = it->Current();
+        auto widget = item.widget;
+        widget->DispatchEvent(ev);
+    }
 }
 
 void LinearLayout::DispatchEvent(MouseEvent ev) {

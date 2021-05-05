@@ -1,5 +1,5 @@
-#ifndef WIDGETS_HPP
-#define WIDGETS_HPP
+#ifndef UI_WIDGETS_HPP
+#define UI_WIDGETS_HPP
 
 #include "widget.hpp"
 
@@ -37,6 +37,27 @@ public:
     void Clear();
     enum ScrollDirection { Up, Down, Left, Right };
     void Scroll(ScrollDirection d);
+};
+
+class LineEdit final: public Widget {
+private:
+    struct State {
+        Unique<List<Char>> buffer;
+        Number cursor_pos;
+        State();
+    };
+    Unique<State> state;
+    void CursorForward();
+    void CursorBack();
+    void Input(Char ch);
+    void Backspace();
+public:
+    LineEdit(const Widget** focus);
+    ~LineEdit() {};
+    void Render(Canvas& target, bool window_active) override;
+    void ConsumeEvent(KeyboardEvent ev) override;
+    void ConsumeEvent(MouseEvent ev) override;
+    String CurrentText();
 };
 
 #endif
