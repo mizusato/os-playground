@@ -15,6 +15,7 @@
 #include "ui/console.hpp"
 
 
+// TODO: rename to StatusWindow and move to a separate file
 class TextWindow final: public BaseWindow {
 private:
     struct State {
@@ -131,7 +132,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     auto win_mouse = TextWindow::Add(Point(60, 300), Point(240, 180), "Mouse", "");
     BaseWindow::Options opts;
     opts.closable = false;
-    LogViewer::Open(Point(600, 400), Point(300, 250), "Log Viewer", opts);
+    LogViewer::Open(Point(600, 450), Point(300, 150), "Log Viewer", opts);
     log("log test", LL_Debug);
     Console::Open(Point(100, 100), Point(400, 300), "Console 0", opts);
     WindowManager::RenderAll(*Graphics::GetScreenCanvas());
