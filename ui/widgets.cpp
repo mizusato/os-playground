@@ -250,7 +250,21 @@ void LineEdit::ConsumeEvent(KeyboardEvent ev) {
                 if ('a' <= ch && ch <= 'z') {
                     ch = ('A' + (ch - 'a'));
                 }
-                // TODO: symbols
+                else if ('0' <= ch && ch <= '9') {
+                    static const char* mapping = ")!@#$%^&*(";
+                    ch = mapping[ch - '0'];
+                }
+                else if ('[' <= ch && ch <= ']') {
+                    ch = '{' + (ch - '[');
+                }
+                else if (ch == '`') { ch = '~'; }
+                else if (ch == '-') { ch = '_'; }
+                else if (ch == '=') { ch = '+'; }
+                else if (ch == ';') { ch = ':'; }
+                else if (ch == '\'') { ch = '"'; }
+                else if (ch == ',') { ch = '<'; }
+                else if (ch == '.') { ch = '>'; }
+                else if (ch == '/') { ch = '?'; }
             }
             Input(ch);
         } else if (ev.key == 0x8) {
