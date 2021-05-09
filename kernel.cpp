@@ -11,55 +11,15 @@
 #include "ui/fonts.hpp"
 #include "ui/windows.hpp"
 #include "ui/widgets.hpp"
+#include "ui/status.hpp"
 #include "ui/log.hpp"
 #include "ui/console.hpp"
 
 
-// TODO: rename to StatusWindow and move to a separate file
-class TextWindow final: public BaseWindow {
-private:
-    struct State {
-        String text;
-        Unique<TextDisplay> display;
-        const Widget* focus = nullptr;
-        State(): text(""), display(Unique<TextDisplay>(new TextDisplay(&focus))) {}
-    };
-    Unique<State> state;
-public:
-    TextWindow(Point pos, Point size, String title):
-        BaseWindow(pos, size, title, Options()),
-        state(new State) {};
-    ~TextWindow() {};
-    void SetText(String new_text) {
-        state->text = new_text;
-        auto& display = state->display;
-        Color color(0, 0, 0, 0xFF);
-        display->Clear();
-        display->Add(state->text, TextStyle(color));
-    }
-    void RenderContent(Canvas& target, bool active) override {
-        auto& display = state->display;
-        display->Render(target, active);
-    }
-    void DispatchContentEvent(KeyboardEvent ev) override {
-        if (ev.ctrl) {
-            if (ev.key == 'p') { state->display->Scroll(TextDisplay::Up); } else
-            if (ev.key == 'n') { state->display->Scroll(TextDisplay::Down); } else
-            if (ev.key == 'f') { state->display->Scroll(TextDisplay::Right); } else
-            if (ev.key == 'b') { state->display->Scroll(TextDisplay::Left); }
-        }
-    }
-    static TextWindow* Add(Point pos, Point size, String title, String text) {
-        auto w = new TextWindow(pos, size, title);
-        w->SetText(text);
-        WindowManager::Add(w);
-        return w;
-    }
-};
-
 extern "C"
 void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     static_cast<void>(static_cast<KernelEntryPoint>(Main));
+    // Initialize
     Heap::Init(memInfo);
     Graphics::Init(gfxInfo);
     WindowManager::Init();
@@ -69,74 +29,22 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     Timer::Init();
     Keyboard::Init();
     Mouse::Init();
+    // Create Windows
     Point screen_size(Graphics::ScreenWidth(), Graphics::ScreenHeight());
-    BackgroundWindow win_bg(Color(0x33, 0x33, 0xA3, 0xFF), screen_size);
-    WindowManager::Add(&win_bg);
-    Byte stub[] = "stub";
-    {
-        String::Builder buf;
-        buf.Write("framebuffer addr: ");
-        buf.Write(String::ReadableSize((Number) gfxInfo->framebuffer));
-        buf.Write("\n");
-        buf.Write("stub addr: ");
-        buf.Write(String::ReadableSize((Number) &stub));
-        TextWindow::Add(Point(400, 100), Point(500, 90), "Stack", buf.Collect());
-    }
-    {
-        static const char* MemoryKindNames[] = { MEMORY_KIND_NAMES };
-        String::Builder buf;
-        buf.Write("(efi available)");
-        buf.Write("\n");
-        buf.Write("addr / size / kind");
-        buf.Write("\n");
-        Number base = (Number) memInfo->mapBuffer;
-        for (Number ptr = base; (ptr - base) < memInfo->mapSize; ptr += memInfo->descSize) {
-            MemoryDescriptor* desc = reinterpret_cast<MemoryDescriptor*>(ptr);
-            if (desc->physicalStart < 0x100000) {
-                continue;
-            }
-            const char* kindName = MemoryKindNames[desc->kind.raw];
-            buf.Write(String::ReadableSize((Number) desc->physicalStart));
-            buf.Write(" / ");
-            buf.Write(String::ReadableSize((Number) (desc->numberOfPages * 4096)));
-            buf.Write(" / ");
-            buf.Write(kindName);
-            buf.Write("\n");
-        }
-        TextWindow::Add(Point(350, 200), Point(600, 200), "Memory Info - EFI", buf.Collect());
-    }
-    {
-        HeapStatus status = Heap::GetStatus();
-        String::Builder buf;
-        buf.Write("(consumed as static)");
-        buf.Write("\n");
-        buf.Write(String::ReadableSize(status.StaticPosition));
-        buf.Write(" (");
-        buf.Write(String::ReadableSize(status.StaticSize));
-        buf.Write(")\n");
-        buf.Write("(consumed as chunks)");
-        buf.Write("\n");
-        Number n;
-        const HeapMemoryInfo* info = Heap::GetInfo(&n);
-        for (Number i = 0; i < n; i += 1) {
-            buf.Write(String::ReadableSize(info[i].start));
-            buf.Write(" (");
-            buf.Write(String::ReadableSize(info[i].size));
-            buf.Write(")\n");
-        }
-        TextWindow::Add(Point(320, 400), Point(600, 240), "Memory Info - Kernel", buf.Collect());
-    }
-    auto win_mem = TextWindow::Add(Point(280, 620), Point(600, 90), "Heap", "");
-    auto win_timer = TextWindow::Add(Point(80, 600), Point(100, 60), "Timer", "");
-    auto win_keyboard = TextWindow::Add(Point(100, 150), Point(200, 100), "Keyboard", "");
-    auto win_mouse = TextWindow::Add(Point(60, 300), Point(240, 180), "Mouse", "");
+    BackgroundWindow background(Color(0x33, 0x33, 0xA3, 0xFF), screen_size);
+    WindowManager::Add(&background);
     BaseWindow::Options opts;
     opts.closable = false;
-    LogViewer::Open(Point(600, 450), Point(300, 150), "Log Viewer", opts);
-    log("log test", LL_Debug);
-    Console::Open(Point(100, 100), Point(400, 300), "Console 0", opts);
+    MemoryMonitor debug_memory(Point(230, 580), opts);
+    TimerInspector debug_timer(Point(80, 600), opts);
+    KeyboardInspector debug_keyboard(Point(100, 150), opts);
+    MouseInspector debug_mouse(Point(60, 300), opts);
+    LogViewer::Open(Point(700, 550), Point(300, 150), "Log Viewer", opts);
+    Console::Open(Point(350, 100), Point(400, 300), "Console 0", opts);
+    // First Rendering
     WindowManager::RenderAll(*Graphics::GetScreenCanvas());
     Graphics::FlushScreenCanvas();
+    // Event Loop
     Point cursor_pos((screen_size.X / 2), (screen_size.Y / 2));
     bool event_emitted;
     MouseEvent prev_mouse_ev;
@@ -147,24 +55,15 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             TimerEvent ev;
             while (Events::TimerSecond->Read(&ev)) {
                 event_emitted = true;
-                win_timer->SetText(String(ev.count));
+                debug_timer.Update(ev);
             }
         }
         {
             KeyboardEvent ev;
             while(Events::Keyboard->Read(&ev)) {
                 event_emitted = true;
-                Char key = ev.key;
                 WindowManager::DispatchEvent(ev);
-                String::Builder buf;
-                buf.Write(String::Chr(key));
-                buf.Write(" ");
-                buf.Write(String::Hex(key));
-                if (ev.shift) { buf.Write(" + shift"); }
-                buf.Write("\n");
-                if (ev.ctrl) { buf.Write("[ctrl] "); }
-                if (ev.alt) { buf.Write("[alt] "); }
-                win_keyboard->SetText(buf.Collect());
+                debug_keyboard.Update(ev);
             }
         }
         {
@@ -190,36 +89,11 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
                 if (prev_mouse_ev.btnLeft && !(ev.btnLeft)) { ev.up = true; }
                 WindowManager::DispatchEvent(ev, prev_mouse_ev);
                 prev_mouse_ev = ev;
-                String::Builder buf;
-                buf.Write("mouse:");
-                buf.Write("\n");
-                buf.Write("x: ");
-                buf.Write(String(ev.pos.X));
-                buf.Write("\n");
-                buf.Write("y: ");
-                buf.Write(String(ev.pos.Y));
-                buf.Write("\n");
-                buf.Write("left: ");
-                buf.Write(String(ev.btnLeft));
-                buf.Write("\n");
-                buf.Write("alt: ");
-                buf.Write(String(ev.alt));
-                win_mouse->SetText(buf.Collect());
+                debug_mouse.Update(ev);
             }
         }
         if (event_emitted) {
-            {
-                String::Builder buf;
-                HeapStatus status = Heap::GetStatus();
-                buf.Write("heap chunks: ");
-                buf.Write(String(status.ChunksAvailable));
-                buf.Write("/");
-                buf.Write(String(status.ChunksTotal));
-                buf.Write("\n");
-                buf.Write("heap size: ");
-                buf.Write(String::ReadableSize(status.ChunksTotal * sizeof(Chunk)));
-                win_mem->SetText(buf.Collect());
-            }
+            debug_memory.Update(Heap::GetStatus());
             Canvas* canvas = Graphics::GetScreenCanvas();
             WindowManager::RenderAll(*canvas);
             for (Number dy = 0; dy < 36; dy += 1) {
