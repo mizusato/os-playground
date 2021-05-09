@@ -40,7 +40,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     KeyboardInspector debug_keyboard(Point(100, 150), opts);
     MouseInspector debug_mouse(Point(60, 300), opts);
     LogViewer::Open(Point(700, 550), Point(300, 150), "Log Viewer", opts);
-    Console::Open(Point(350, 100), Point(400, 300), "Console 0", opts);
+    Console::Open(Point(350, 100), Point(520, 320), "Console 0", opts);
     // First Rendering
     WindowManager::RenderAll(*Graphics::GetScreenCanvas());
     Graphics::FlushScreenCanvas();

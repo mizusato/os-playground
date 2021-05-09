@@ -58,6 +58,7 @@ public:
     void ConsumeEvent(KeyboardEvent ev) override;
     void ConsumeEvent(MouseEvent ev) override;
     String CurrentText();
+    void Clear();
 };
 
 #endif

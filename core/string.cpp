@@ -21,6 +21,29 @@ String String::Builder::Collect() {
     return std::move(buf);
 }
 
+bool operator == (const String& a, const String& b) {
+    auto u = a.Iterate();
+    auto v = b.Iterate();
+    bool equals = true;
+    bool u_ok, v_ok;
+    while ((u_ok = u->HasCurrent()) || (v_ok = v->HasCurrent())) {
+        if (u_ok && v_ok) {
+            Char u_ch = u->Current();
+            Char v_ch = v->Current();
+            if (u_ch != v_ch) {
+                equals = false;
+                break;
+            }
+            u->Proceed();
+            v->Proceed();
+        } else {
+            equals = false;
+            break;
+        }
+    }
+    return equals;
+}
+
 Unique<String::Iterator> LegacyString::Iterate() const {
     return Unique<String::Iterator>(new LegacyString::Iterator(data));
 }

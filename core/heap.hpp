@@ -38,6 +38,7 @@ namespace Heap {
     void* RequestStatic(Number size);
     const HeapMemoryInfo* GetInfo(Number* length);
     HeapStatus GetStatus();
+    const MemoryInfo* GetEfiMemoryInfo();
 }
 
 #endif

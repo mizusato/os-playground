@@ -7,6 +7,7 @@
 #define HEAP_MEMORY_INFO_LOG_MAX 128
 #define MINIMAL_ACCEPTED_MEMORY_AREA_SIZE (100 * 1024)
 
+const MemoryInfo* efi_memory_info;
 Chunk sentinel_chunk;
 Chunk* free_list;
 Byte* static_ptr;
@@ -57,6 +58,7 @@ namespace Heap {
         }
     }
     void Init(MemoryInfo* memInfo) {
+        efi_memory_info = memInfo;
         sentinel_chunk.next = &sentinel_chunk;
         sentinel_chunk.previous = &sentinel_chunk;
         free_list = &sentinel_chunk;
@@ -150,6 +152,9 @@ namespace Heap {
     }
     HeapStatus GetStatus() {
         return status;
+    }
+    const MemoryInfo* GetEfiMemoryInfo() {
+        return efi_memory_info;
     }
 }
 

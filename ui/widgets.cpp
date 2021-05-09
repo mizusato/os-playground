@@ -277,3 +277,16 @@ void LineEdit::ConsumeEvent(MouseEvent ev) {
     // TODO
 }
 
+String LineEdit::CurrentText() {
+    auto copy = Unique<List<Char>>(new List<Char>);
+    for (auto it = state->buffer->Iterate(); it->HasCurrent(); it->Proceed()) {
+        copy->Append(it->Current());
+    }
+    return std::move(copy);
+}
+
+void LineEdit::Clear() {
+    state->buffer = Unique<List<Char>>(new List<Char>());
+    state->cursor_pos = 0;
+}
+
