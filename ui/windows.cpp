@@ -96,7 +96,7 @@ void BaseWindow::DispatchEvent(KeyboardEvent ev) {
 
 void BaseWindow::DispatchEvent(MouseEvent ev) {
     if (state->dragging) {
-        if (!(ev.alt) || ev.up || ev.out) {
+        if (ev.up || ev.out) {
             state->dragging = false;
         } else {
             auto ref_x = static_cast<SignedNumber>(state->dragPoint.X);
@@ -112,7 +112,9 @@ void BaseWindow::DispatchEvent(MouseEvent ev) {
             position = Point(Number(new_x), Number(new_y));
         }
     } else {
-        if (ev.down && ev.alt) {
+        Number b = opts->borderSize;
+        Number t = opts->titleHeight;
+        if (ev.down && (ev.alt || ev.pos.Y < (b + t))) {
             state->dragging = true;
             state->dragPoint = ev.pos;
         } else {
