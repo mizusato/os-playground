@@ -4,6 +4,7 @@
 #include "windows.hpp"
 #include "widgets.hpp"
 
+
 class StatusWindow: public BaseWindow {
 private:
     struct State {

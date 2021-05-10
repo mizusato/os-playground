@@ -9,6 +9,7 @@
 #include "core/keyboard.hpp"
 #include "core/mouse.hpp"
 #include "ui/fonts.hpp"
+#include "ui/cursor.hpp"
 #include "ui/windows.hpp"
 #include "ui/widgets.hpp"
 #include "ui/status.hpp"
@@ -70,20 +71,8 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             MouseEvent ev;
             while(Events::Mouse->Read(&ev)) {
                 event_emitted = true;
-                Number x = cursor_pos.X;
-                Number y = cursor_pos.Y;
-                Number new_x = (x + ev.pos.X);
-                Number new_y = (y + ev.pos.Y);
-                if (
-                    (new_x >= screen_size.X)
-                    || (new_y >= screen_size.Y)
-                    || ((new_x > x) && ((new_x - x) >= screen_size.X))
-                    || ((x > new_x) && ((x - new_x) >= screen_size.X))
-                    || ((new_y > y) && ((new_y - y) >= screen_size.Y))
-                    || ((y > new_y) && ((y - new_y) >= screen_size.Y)) ) {
-                    continue;
-                }
-                cursor_pos = Point(new_x, new_y);
+                bool ok = Cursor::UpdatePosition(&cursor_pos, ev, screen_size);
+                if ( !(ok) ) { continue; }
                 ev.pos = cursor_pos;
                 if (!(prev_mouse_ev.btnLeft) && ev.btnLeft) { ev.down = true; }
                 if (prev_mouse_ev.btnLeft && !(ev.btnLeft)) { ev.up = true; }
@@ -96,13 +85,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             debug_memory.Update(Heap::GetStatus());
             Canvas* canvas = Graphics::GetScreenCanvas();
             WindowManager::RenderAll(*canvas);
-            for (Number dy = 0; dy < 36; dy += 1) {
-                for (Number dx = 0; dx < 18; dx += 1) {
-                    Number x = cursor_pos.X + dx;
-                    Number y = cursor_pos.Y + dy;
-                    canvas->DrawPixel(x, y, 0x33, 0xFF, 0xA0, 0xFF);
-                }
-            }
+            Cursor::Render(cursor_pos, *canvas);
             Graphics::FlushScreenCanvas();
         }
         __asm__("hlt");
