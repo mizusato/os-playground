@@ -191,7 +191,7 @@ namespace Graphics {
     Font* basic_font;
     void Init(GraphicsInfo* gfxInfo) {
         if (screen != nullptr) {
-            panic("Graphics::Init(): already initialized");
+            panic("Graphics: already initialized");
         }
         screen = new Screen(gfxInfo);
         screen_raw_canvas = new ScreenRawCanvas(screen);

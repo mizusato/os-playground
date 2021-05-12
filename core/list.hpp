@@ -97,6 +97,9 @@ public:
             Heap::Free(head, numberOfChunks);
         }
     }
+    bool Empty() const {
+        return (head == nullptr);
+    }
     bool NotEmpty() const {
         return (head != nullptr);
     }
@@ -110,6 +113,32 @@ public:
         iterator->innerIndex = 0;
         return Unique<Iterator>(iterator);
     }
+    T Shift() {
+        if (head == nullptr) {
+            panic("List: Shift() on an empty list");
+        }
+        ChunkData* data = reinterpret_cast<ChunkData*>(&(head->data));
+        if (data->elementAmount == 1) {
+            T first = data->Get(0);
+            data->Unset(0);
+            Chunk* next = head->next;
+            Heap::Free(head, 1);
+            head = next;
+            return first;
+        } else {
+            if (data->elementAmount == 0) {
+                panic("List: something went wrong");
+            }
+            Number n = data->elementAmount;
+            T first = data->Get(0);
+            for (Number i = 0; i < (n - 1); i += 1) {
+                data->Set(i, data->Get(i + 1));
+            }
+            data->Unset(n - 1);
+            data->elementAmount -= 1;
+            return first;
+        }
+    };
     void Prepend(T element) {
         length += 1;
         if (head == nullptr) {

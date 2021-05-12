@@ -4,6 +4,11 @@
 
 BackgroundWindow::BackgroundWindow(Color color, Point size): Window(Point(0,0), size), color(color) {
     flags.background = true;
+    WindowManager::Add(this);
+}
+
+BackgroundWindow::~BackgroundWindow() {
+    WindowManager::Remove(this);
 }
 
 void BackgroundWindow::Render(Canvas& target, bool _) {

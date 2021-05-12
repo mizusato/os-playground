@@ -8,7 +8,7 @@ private:
     Color color;
 public:
     BackgroundWindow(Color color, Point size);
-    ~BackgroundWindow() {};
+    ~BackgroundWindow();
     void Render(Canvas& target, bool active);
     void DispatchEvent(KeyboardEvent ev) {};
     void DispatchEvent(MouseEvent ev) {};

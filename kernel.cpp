@@ -8,6 +8,7 @@
 #include "core/timer.hpp"
 #include "core/keyboard.hpp"
 #include "core/mouse.hpp"
+#include "core/scheduler.hpp"
 #include "ui/fonts.hpp"
 #include "ui/cursor.hpp"
 #include "ui/windows.hpp"
@@ -15,6 +16,7 @@
 #include "ui/status.hpp"
 #include "ui/log.hpp"
 #include "ui/console.hpp"
+#include "ui/ui.hpp"
 
 
 extern "C"
@@ -30,65 +32,58 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     Timer::Init();
     Keyboard::Init();
     Mouse::Init();
+    Scheduler::Init();
     // Create Windows
-    Point screen_size(Graphics::ScreenWidth(), Graphics::ScreenHeight());
-    BackgroundWindow background(Color(0x33, 0x33, 0xA3, 0xFF), screen_size);
-    WindowManager::Add(&background);
+    Point screenSize(Graphics::ScreenWidth(), Graphics::ScreenHeight());
     BaseWindow::Options opts;
     opts.closable = false;
-    MemoryMonitor debug_memory(Point(230, 580), opts);
-    TimerInspector debug_timer(Point(80, 600), opts);
-    KeyboardInspector debug_keyboard(Point(100, 150), opts);
-    MouseInspector debug_mouse(Point(60, 300), opts);
+    BackgroundWindow background(Color(0x33, 0x33, 0xA3, 0xFF), screenSize);
+    MemoryMonitor debugMemory(Point(230, 580), opts);
+    TimerInspector debugTimer(Point(80, 600), opts);
+    KeyboardInspector debugKeyboard(Point(100, 150), opts);
+    MouseInspector debugMouse(Point(60, 300), opts);
     LogViewer::Open(Point(700, 550), Point(300, 150), "Log Viewer", opts);
     Console::Open(Point(350, 100), Point(520, 320), "Console 0", opts);
     // First Rendering
-    WindowManager::RenderAll(*Graphics::GetScreenCanvas());
-    Graphics::FlushScreenCanvas();
+    Cursor::SetPosition(Point((screenSize.X / 2), (screenSize.Y / 2)));
+    RenderUI();
     // Event Loop
-    Point cursor_pos((screen_size.X / 2), (screen_size.Y / 2));
-    bool event_emitted;
-    MouseEvent prev_mouse_ev;
-    prev_mouse_ev.pos = cursor_pos;
+    bool somethingExecuted, eventEmitted;
     while(true) {
-        event_emitted = false;
+        somethingExecuted = Scheduler::Cycle();
+        eventEmitted = false;
         {
             TimerEvent ev;
-            while (Events::TimerSecond->Read(&ev)) {
-                event_emitted = true;
-                debug_timer.Update(ev);
+            while (Events::Timer->Read(&ev)) {
+                eventEmitted = true;
+                debugTimer.Update(ev);
             }
         }
         {
             KeyboardEvent ev;
             while(Events::Keyboard->Read(&ev)) {
-                event_emitted = true;
+                eventEmitted = true;
                 WindowManager::DispatchEvent(ev);
-                debug_keyboard.Update(ev);
+                debugKeyboard.Update(ev);
             }
         }
         {
             MouseEvent ev;
             while(Events::Mouse->Read(&ev)) {
-                event_emitted = true;
-                bool ok = Cursor::UpdatePosition(&cursor_pos, ev, screen_size);
+                eventEmitted = true;
+                bool ok = Cursor::UpdatePosition(ev, screenSize);
                 if ( !(ok) ) { continue; }
-                ev.pos = cursor_pos;
-                if (!(prev_mouse_ev.btnLeft) && ev.btnLeft) { ev.down = true; }
-                if (prev_mouse_ev.btnLeft && !(ev.btnLeft)) { ev.up = true; }
-                WindowManager::DispatchEvent(ev, prev_mouse_ev);
-                prev_mouse_ev = ev;
-                debug_mouse.Update(ev);
+                ev.pos = Cursor::GetPosition();
+                WindowManager::DispatchEvent(ev);
+                debugMouse.Update(ev);
             }
         }
-        if (event_emitted) {
-            debug_memory.Update(Heap::GetStatus());
-            Canvas* canvas = Graphics::GetScreenCanvas();
-            WindowManager::RenderAll(*canvas);
-            Cursor::Render(cursor_pos, *canvas);
-            Graphics::FlushScreenCanvas();
+        if (somethingExecuted || eventEmitted) {
+            debugMemory.Update(Heap::GetStatus());
+            RenderUI();
+        } else {
+            __asm__("hlt");
         }
-        __asm__("hlt");
     };
 }
 
@@ -105,15 +100,17 @@ void handlePanicInterrupt() {
 }
 
 void handleTimerInterrupt() {
-    static Number seconds = 0;
-    static Number count = 0;
-    if (count == 0) {
+    // 4ms interval
+    static Number event_count = 0;
+    static Number tick = 0;
+    if (tick == 0) {
+        // 100ms interval
         TimerEvent ev;
-        ev.count = seconds;
-        Events::TimerSecond->Write(ev);
-        seconds += 1;
+        ev.count = event_count;
+        event_count += 1;
+        Events::Timer->Write(ev);
     }
-    count = (count + 1) % 250;
+    tick = (tick + 1) % 25;
 }
 
 bool ModCtrl = false;

@@ -30,7 +30,7 @@ struct TimerEvent {
 namespace Events {
     extern FIFO<KeyboardEvent>* Keyboard;
     extern FIFO<MouseEvent>* Mouse;
-    extern FIFO<TimerEvent>* TimerSecond;
+    extern FIFO<TimerEvent>* Timer;
     void Init();
 };
 

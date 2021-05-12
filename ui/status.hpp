@@ -73,7 +73,9 @@ public:
         StatusWindow(pos, Point(100, 60), "Timer", opts) {};
     ~TimerInspector() {};
     void Update(const TimerEvent& ev) {
-        SetText(String(ev.count));
+        if ((ev.count % 10) == 0) {
+            SetText(String(ev.count / 10));
+        }
     }
 };
 

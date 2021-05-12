@@ -5,9 +5,16 @@
 #include "../core/events.hpp"
 
 namespace Cursor {
-    bool UpdatePosition(Point* pos, const MouseEvent& ev, const Point& screen_size) {
-        Number x = pos->X;
-        Number y = pos->Y;
+    Point pos;
+    void SetPosition(Point newValue) {
+        pos = newValue;
+    }
+    Point GetPosition() {
+        return pos;
+    }
+    bool UpdatePosition(const MouseEvent& ev, const Point& screen_size) {
+        Number x = pos.X;
+        Number y = pos.Y;
         Number new_x = (x + ev.pos.X);
         Number new_y = (y + ev.pos.Y);
         if (
@@ -20,12 +27,12 @@ namespace Cursor {
         ) {
             return false;
         } else {
-            pos->X = new_x;
-            pos->Y = new_y;
+            pos.X = new_x;
+            pos.Y = new_y;
             return true;
         }
     }
-    void Render(const Point& pos, Canvas& canvas) {
+    void Render(Canvas& canvas) {
         for (Number dy = 0; dy < 36; dy += 1) {
             for (Number dx = 0; dx < 18; dx += 1) {
                 Number x = pos.X + dx;

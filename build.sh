@@ -22,7 +22,7 @@ cp "$BOOTLOADER_DIR/build/EFI/BOOT/BOOTX64.EFI" "$ISO_DIR/EFI/BOOT/" && \
 
 nasm -f elf64 "kernel.asm" -o "$OBJECTS_DIR/kernel.asm.o" && \
 
-( for file in core/*.cpp ui/*.cpp; do
+( for file in core/*.cpp ui/*.cpp shell/*.cpp; do
   g++ -c "$file" -o "$OBJECTS_DIR/${file/\//_}".o $CXX_OPTIONS || exit $?
 done ) && \
 g++ -c "kernel.cpp" -o "$OBJECTS_DIR/kernel.cpp.o" $CXX_OPTIONS && \
