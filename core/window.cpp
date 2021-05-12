@@ -63,10 +63,12 @@ namespace WindowManager {
         }
     }
     void DispatchEvent(MouseEvent ev) {
-        if (!(prev_mouse_ev.btnLeft) && ev.btnLeft) {
+        MouseEvent prev_ev = prev_mouse_ev;
+        prev_mouse_ev = ev;
+        if (!(prev_ev.btnLeft) && ev.btnLeft) {
             ev.down = true;
         }
-        if (prev_mouse_ev.btnLeft && !(ev.btnLeft)) {
+        if (prev_ev.btnLeft && !(ev.btnLeft)) {
             ev.up = true;
         }
         auto reversed = Unique<List<Window*>>(new List<Window*>());
@@ -75,10 +77,10 @@ namespace WindowManager {
         }
         for (auto it = reversed->Iterate(); it->HasCurrent(); it->Proceed()) {
             Window* current = it->Current();
-            if (current->Contains(prev_mouse_ev.pos)) {
+            if (current->Contains(prev_ev.pos)) {
                 if (!(current->Contains(ev.pos))) {
                     MouseEvent out_ev;
-                    out_ev.pos = prev_mouse_ev.pos;
+                    out_ev.pos = prev_ev.pos;
                     out_ev.out = true;
                     current->DispatchEvent(out_ev);
                 }
@@ -87,7 +89,7 @@ namespace WindowManager {
                 if (current != activeWindow && ev.down) {
                     Raise(current);
                 }
-                if (!(current->Contains(prev_mouse_ev.pos))) {
+                if (!(current->Contains(prev_ev.pos))) {
                     ev.in = true;
                 }
                 ev.pos = (ev.pos - current->position);
@@ -95,7 +97,6 @@ namespace WindowManager {
                 break;
             }
         }
-        prev_mouse_ev = ev;
     }
 };
 
