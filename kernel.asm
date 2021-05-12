@@ -5,7 +5,7 @@ global EntryPoint
 extern Main
 EntryPoint:
     cli
-    lgdt [GDT_POINTER]
+    o64 lgdt [GDT_POINTER]
     push rbp
     mov rbp, rsp
     mov rax, .setcs
@@ -139,6 +139,9 @@ PanicInterruptHandler:
     call handlePanicInterrupt
     hlt
 
+
+section .data
+
 global PrimaryFontData
 PrimaryFontData:
 incbin "ui/primary.font.bin"
@@ -152,7 +155,6 @@ incbin "ui/primary.font.bin"
     ((access & 0xFF) << 40) | \
     ((flags & 0x0F) << 52))
 
-section .data
 GDT_0_NULL:
     dq MAKE_GDT_DESC(0, 0, 0, 0); null descriptor
 GDT_1_CODE:
@@ -165,7 +167,7 @@ GDT_END:
 
 GDT_POINTER:
     dw GDT_END - GDT_0_NULL - 1  ; limit (Size of GDT - 1)
-    dd GDT_0_NULL  ; base of GDT
+    dq GDT_0_NULL  ; base of GDT
 
 CODE_SELECTOR equ GDT_1_CODE - GDT_0_NULL
 DATA_SELECTOR equ GDT_2_DATA - GDT_0_NULL
