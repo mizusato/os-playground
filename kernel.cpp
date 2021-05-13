@@ -48,33 +48,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     // Event Loop
     while(true) {
         bool somethingExecuted = Scheduler::Cycle();
-        bool significantEventEmitted = false;
-        {
-            TimerEvent ev;
-            while (Events::Timer->Read(&ev)) {
-                bool consumed = Scheduler::DispatchTimerEvent(ev);
-                if (consumed) {
-                    significantEventEmitted = true;
-                }
-            }
-        }
-        {
-            KeyboardEvent ev;
-            while(Events::Keyboard->Read(&ev)) {
-                significantEventEmitted = true;
-                WindowManager::DispatchEvent(ev);
-            }
-        }
-        {
-            MouseEvent ev;
-            while(Events::Mouse->Read(&ev)) {
-                significantEventEmitted = true;
-                bool ok = Cursor::UpdatePosition(ev, screenSize);
-                if ( !(ok) ) { continue; }
-                ev.pos = Cursor::GetPosition();
-                WindowManager::DispatchEvent(ev);
-            }
-        }
+        bool significantEventEmitted = ProcessEvents();
         if (somethingExecuted || significantEventEmitted) {
             memoryMonitor.Update(Heap::GetStatus());
             RenderUI();
