@@ -40,10 +40,11 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     BackgroundWindow background(Color(0x33, 0x33, 0xA3, 0xFF), screenSize);
     MemoryMonitor memoryMonitor(Point(230, 580), opts);
     LogViewer::Open(Point(700, 550), Point(300, 150), "Log Viewer", opts);
-    Console::Open(Point(350, 100), Point(520, 320), "Console 0", opts);
+    Console::Open(Point(50, 100), Point(520, 320), "Console 0", opts);
     // First Rendering
     Cursor::SetPosition(Point((screenSize.X / 2), (screenSize.Y / 2)));
     memoryMonitor.Update(Heap::GetStatus());
+    log("initialized", LL_Info);
     RenderUI();
     // Event Loop
     while(true) {
