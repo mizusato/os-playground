@@ -4,7 +4,7 @@
 #include "../shell/runtime.hpp"
 
 namespace Userland {
-    class Timer final: public Program {
+    class Ticker final: public Program {
     private:
         class ShowCount final: public Continuation {
         private:
@@ -38,7 +38,7 @@ namespace Userland {
             }
         };
     public:
-        String Name() const override { return "Timer"; }
+        String Name() const override { return "Ticker"; }
         Continuation* Run() const override {
             return new Main();
         }
