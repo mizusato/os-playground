@@ -154,8 +154,9 @@ bool TaskScheduler::Cycle() {
             remaining->Append(task);
         }
     }
+    bool tasksChanged = (remaining->Length() != runningTasks->Length());
     runningTasks = std::move(remaining);
-    bool somethingExecuted = false;
+    bool somethingExecuted = tasksChanged;
     for (auto it = runningTasks->Iterate(); it->HasCurrent(); it->Proceed()) {
         auto task = it->Current();
         if (task->runQueue->NotEmpty()) {

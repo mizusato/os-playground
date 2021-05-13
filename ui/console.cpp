@@ -1,6 +1,7 @@
 #include "../core/info.hpp"
 #include "../core/scheduler.hpp"
 #include "../userland/timer.hpp"
+#include "../userland/countdown.hpp"
 #include "status.hpp"
 #include "console.hpp"
 
@@ -69,11 +70,14 @@ void Console::ExecuteCommand(String command) {
     if (command == "help") {
         ShowMessage (
             "scroll: C-p C-n C-b C-f\n"
-            "commands: help, timer, meminfo",
+            "commands: help, timer, countdown, meminfo",
             M_Success, cmd
         );
     } else if (command == "timer") {
         auto p = Shared<Program>(new Userland::Timer());
+        Start(p, cmd);
+    } else if (command == "countdown") {
+        auto p = Shared<Program>(new Userland::Countdown(1024));
         Start(p, cmd);
     } else if (command == "meminfo") {
         ShowMessage(GetMemoryInfo(), M_Output, cmd);

@@ -5,7 +5,7 @@
 
 namespace Userland {
     class Timer final: public Program {
-    public:
+    private:
         class ShowCount final: public Continuation {
         private:
             Number count;
@@ -37,6 +37,7 @@ namespace Userland {
                 return Result(new ShowCount(0), new TimerHandler());
             }
         };
+    public:
         String Name() const override { return "Timer"; }
         Continuation* Run() const override {
             return new Main();
