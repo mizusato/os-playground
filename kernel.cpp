@@ -38,10 +38,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     BaseWindow::Options opts;
     opts.closable = false;
     BackgroundWindow background(Color(0x33, 0x33, 0xA3, 0xFF), screenSize);
-    MemoryMonitor debugMemory(Point(230, 580), opts);
-    TimerInspector debugTimer(Point(80, 600), opts);
-    KeyboardInspector debugKeyboard(Point(100, 150), opts);
-    MouseInspector debugMouse(Point(60, 300), opts);
+    MemoryMonitor memoryMonitor(Point(230, 580), opts);
     LogViewer::Open(Point(700, 550), Point(300, 150), "Log Viewer", opts);
     Console::Open(Point(350, 100), Point(520, 320), "Console 0", opts);
     // First Rendering
@@ -56,7 +53,7 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             TimerEvent ev;
             while (Events::Timer->Read(&ev)) {
                 eventEmitted = true;
-                debugTimer.Update(ev);
+                Scheduler::DispatchTimerEvent(ev);
             }
         }
         {
@@ -64,7 +61,6 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
             while(Events::Keyboard->Read(&ev)) {
                 eventEmitted = true;
                 WindowManager::DispatchEvent(ev);
-                debugKeyboard.Update(ev);
             }
         }
         {
@@ -75,11 +71,10 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
                 if ( !(ok) ) { continue; }
                 ev.pos = Cursor::GetPosition();
                 WindowManager::DispatchEvent(ev);
-                debugMouse.Update(ev);
             }
         }
         if (somethingExecuted || eventEmitted) {
-            debugMemory.Update(Heap::GetStatus());
+            memoryMonitor.Update(Heap::GetStatus());
             RenderUI();
         } else {
             __asm__("hlt");

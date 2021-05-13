@@ -7,6 +7,7 @@ namespace Scheduler {
     void Init();
     TaskScheduler* GetInstance();
     bool Cycle();
+    void DispatchTimerEvent(TimerEvent ev);
 };
 
 #endif

@@ -53,7 +53,8 @@ namespace WindowManager {
     void RenderAll(Canvas& canvas) {
         for (auto it = windows->Iterate(); it->HasCurrent(); it->Proceed()) {
             auto current = it->Current();
-            auto viewport = canvas.SliceView(current->position, current->size);
+            auto& g = current->geometry;
+            auto viewport = canvas.SliceView(g->position, g->size);
             current->Render(*viewport, (current == activeWindow));
         }
     }
@@ -92,7 +93,7 @@ namespace WindowManager {
                 if (!(current->Contains(prev_ev.pos))) {
                     ev.in = true;
                 }
-                ev.pos = (ev.pos - current->position);
+                ev.pos = (ev.pos - current->geometry->position);
                 current->DispatchEvent(ev);
                 break;
             }
@@ -101,6 +102,6 @@ namespace WindowManager {
 };
 
 bool Window::Contains(Point p) const {
-    return InArea(p, position, size);
+    return InArea(p, geometry->position, geometry->size);
 }
 

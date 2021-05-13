@@ -3,6 +3,7 @@
 
 #include "windows.hpp"
 #include "widgets.hpp"
+#include "../shell/runtime.hpp"
 
 
 class StatusWindow: public BaseWindow {
@@ -11,62 +12,35 @@ private:
         String text;
         Unique<TextDisplay> display;
         const Widget* focus = nullptr;
-        State(): text(""), display(Unique<TextDisplay>(new TextDisplay(&focus))) {}
+        State();
     };
     Unique<State> state;
-protected:
-    StatusWindow(Point pos, Point size, String title, Options opts):
-        BaseWindow(pos, size, title, opts),
-        state(new State) {
-            WindowManager::Add(this);
-        };
 public:
-    virtual ~StatusWindow() {
-        WindowManager::Remove(this);
-    };
-    void SetText(String new_text) {
-        state->text = new_text;
-        auto& display = state->display;
-        Color color(0, 0, 0, 0xFF);
-        display->Clear();
-        display->Add(state->text, TextStyle(color));
-    }
-    void RenderContent(Canvas& target, bool active) override {
-        auto& display = state->display;
-        display->Render(target, active);
-    }
-    void DispatchContentEvent(KeyboardEvent ev) override {
-        if (ev.ctrl) {
-            if (ev.key == 'p') { state->display->Scroll(TextDisplay::Up); } else
-            if (ev.key == 'n') { state->display->Scroll(TextDisplay::Down); } else
-            if (ev.key == 'f') { state->display->Scroll(TextDisplay::Right); } else
-            if (ev.key == 'b') { state->display->Scroll(TextDisplay::Left); }
-        }
-    }
+    StatusWindow(Point pos, Point size, String title, Options opts);
+    virtual ~StatusWindow();
+    void SetText(String newText);
+    void RenderContent(Canvas& target, bool active) override;
+    void DispatchContentEvent(KeyboardEvent ev) override;
+};
+
+class TaskStatusWindow final: public StatusWindow, public AbstractWindow {
+public:
+    TaskStatusWindow(Point pos, Point size, String title, Options opts);
+    ~TaskStatusWindow() {};
+    void Destroy() override;
+    void SetTitle(String title) override;
+    void SetContent(String content) override;
+    void HandleClose() override;
 };
 
 class MemoryMonitor final: public StatusWindow {
 public:
-    MemoryMonitor(Point pos, Options opts):
-        StatusWindow(pos, Point(450, 90), "Memory Monitor", opts) {};
+    MemoryMonitor(Point pos, Options opts);
     ~MemoryMonitor() {};
-    void Update(HeapStatus status) {
-        String::Builder buf;
-        Number used = (status.ChunksTotal - status.ChunksAvailable);
-        buf.Write("chunks: ");
-        buf.Write(String(used));
-        buf.Write("/");
-        buf.Write(String(status.ChunksTotal));
-        buf.Write("\n");
-        buf.Write("size: (");
-        buf.Write(String::ReadableSize(used * sizeof(Chunk)));
-        buf.Write(")/(");
-        buf.Write(String::ReadableSize(status.ChunksTotal * sizeof(Chunk)));
-        buf.Write(")");
-        SetText(buf.Collect());
-    }
+    void Update(HeapStatus status);
 };
 
+/*
 class TimerInspector final: public StatusWindow {
 public:
     TimerInspector(Point pos, Options opts):
@@ -120,6 +94,7 @@ public:
         SetText(buf.Collect());
     }
 };
+*/
 
 #endif
 

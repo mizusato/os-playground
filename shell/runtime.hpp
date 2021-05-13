@@ -9,9 +9,9 @@
 class AbstractConsole {
 protected:
     AbstractConsole() {};
-    virtual ~AbstractConsole() {};
 public:
-    virtual void TaskNotifyStarted(Number cmd) = 0;
+    virtual ~AbstractConsole() {};
+    virtual void TaskNotifyStarted(Number cmd, Number id) = 0;
     virtual void TaskNotifyKilled(Number cmd) = 0;
     virtual void TaskNotifyDone(Number cmd, bool ok, String msg) = 0;
     virtual void TaskPrintLog(Number cmd, String msg) = 0;
@@ -20,11 +20,22 @@ public:
 class AbstractWindow {
 protected:
     AbstractWindow() {};
-    virtual ~AbstractWindow() {};
 public:
+    virtual ~AbstractWindow() {};
     virtual void Destroy() = 0;
     virtual void SetTitle(String title) = 0;
     virtual void SetContent(String content) = 0;
+};
+
+class EventHandler {
+protected:
+    EventHandler() {};
+public:
+    virtual ~EventHandler() {};
+    enum Kind {
+        Timer, Keyboard, Mouse
+    };
+    virtual Kind GetKind() = 0;
 };
 
 struct TaskStatus {
@@ -47,9 +58,10 @@ protected:
 public:
     virtual ~Continuation() {};
     struct Result {
-        bool hasNext;
-        Shared<Continuation> next;
-        Result(bool hasNext, Shared<Continuation> next): hasNext(hasNext), next(std::move(next)) {};
+        Continuation* next;
+        EventHandler* newHandler;
+        Result(Continuation* next, EventHandler* newHandler):
+            next(next), newHandler(newHandler) {};
     };
     virtual Result Run(TaskContext& ctx, TaskStatus& status) = 0;
 };
@@ -57,39 +69,42 @@ public:
 class Program {
 protected:
     Program() {};
-    virtual ~Program() {};
 public:
+    virtual ~Program() {};
     virtual String Name() const = 0;
-    virtual Shared<Continuation> Run() const = 0;
+    virtual Continuation* Run() const = 0;
 };
 
-class TimerEventHandler {
+class TimerEventHandler: public EventHandler {
 protected:
     TimerEventHandler() {};
 public:
     virtual ~TimerEventHandler() {};
-    virtual Shared<Continuation> HandleEvent(TimerEvent ev) = 0;
+    virtual Continuation* HandleEvent(TimerEvent ev) = 0;
+    Kind GetKind() override { return Timer; }
 };
 
-class KeyboardEventHandler {
+class KeyboardEventHandler: public EventHandler {
 protected:
     KeyboardEventHandler() {};
 public:
     virtual ~KeyboardEventHandler() {};
-    virtual Shared<Continuation> HandleEvent(KeyboardEvent ev) = 0;
+    virtual Continuation* HandleEvent(KeyboardEvent ev) = 0;
+    Kind GetKind() override { return Keyboard; }
 };
 
-class MouseEventHandler {
+class MouseEventHandler: public EventHandler {
 protected:
     MouseEventHandler() {};
 public:
     virtual ~MouseEventHandler() {};
-    virtual Shared<Continuation> HandleEvent(MouseEvent ev) = 0;
+    virtual Continuation* HandleEvent(MouseEvent ev) = 0;
+    Kind GetKind() override { return Mouse; }
 };
 
 class Task final {
 public:
-    Task(Number id, Unique<TaskContext> ctx, Shared<Continuation> k);
+    Task(Number id, Unique<TaskContext> ctx, Continuation* k);
     ~Task() {};
     Number id;
     Unique<TaskContext> ctx;
@@ -107,6 +122,8 @@ public:
         bool AllEmpty() const;
     };
     Unique<EventHandlers> handlers;
+    void QueueContinuation(Continuation* k);
+    void AttachEventHandler(EventHandler* handler);
 };
 
 class TaskScheduler final {
@@ -118,6 +135,7 @@ public:
     ~TaskScheduler() {};
     Number Start(Shared<Program> p, Unique<TaskContext> ctx);
     bool Kill(Number id);
+    bool Kill(AbstractWindow *window);
     bool Cycle();
     void DispatchEvent(TimerEvent ev);
     void DispatchEvent(KeyboardEvent ev, AbstractWindow* window);

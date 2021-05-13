@@ -123,15 +123,20 @@ public:
             data->Unset(0);
             Chunk* next = head->next;
             Heap::Free(head, 1);
-            head = next;
+            if (numberOfChunks == 1) {
+                head = nullptr;
+                numberOfChunks = 0;
+            } else {
+                if (numberOfChunks == 0) { panic("List: something went wrong"); }
+                head = next;
+                numberOfChunks -= 1;
+            }
             return first;
         } else {
-            if (data->elementAmount == 0) {
-                panic("List: something went wrong");
-            }
+            if (data->elementAmount == 0) { panic("List: something went wrong"); }
             Number n = data->elementAmount;
             T first = data->Get(0);
-            for (Number i = 0; i < (n - 1); i += 1) {
+            for (Number i = 0; (i + 1) < n; i += 1) {
                 data->Set(i, data->Get(i + 1));
             }
             data->Unset(n - 1);

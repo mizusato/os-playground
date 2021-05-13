@@ -43,6 +43,7 @@ public:
     void Render(Canvas& target, bool active) override;
     void DispatchEvent(KeyboardEvent ev) override;
     void DispatchEvent(MouseEvent ev) override;
+    void ChangeTitle(String title);
     virtual void RenderContent(Canvas& target, bool active) {};
     virtual void DispatchContentEvent(KeyboardEvent ev) {};
     virtual void DispatchContentEvent(MouseEvent ev) {};

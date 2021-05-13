@@ -9,7 +9,7 @@ class Unique {
 private:
     T* ptr;
 public:
-    Unique(T* ptr): ptr(ptr) {};
+    explicit Unique(T* ptr): ptr(ptr) {};
     virtual ~Unique() {
         if (ptr != nullptr) {
             delete ptr;

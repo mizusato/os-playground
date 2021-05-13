@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "heap.hpp"
+#include "panic.hpp"
 
 
 template <typename T>
@@ -14,7 +15,7 @@ private:
     };
     ControlBlock* blk;
 public:
-    Shared(T* raw) {
+    explicit Shared(T* raw) {
         blk = new ControlBlock;
         blk->raw = raw;
         blk->ref = 1;

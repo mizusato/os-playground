@@ -6,17 +6,22 @@
 
 class Window {
 protected:
-    Window(Point position, Point size): position(position), size(size) {};
+    Window(Point position, Point size):
+        geometry(Unique<Geometry>(new Geometry(position, size))) {};
 public:
-    Point position;
-    Point size;
+    struct Geometry {
+        Point position;
+        Point size;
+        Geometry(Point position, Point size): position(position), size(size) {};
+    };
+    Unique<Geometry> geometry;
     virtual ~Window() {};
     virtual void Render(Canvas& target, bool active) = 0;
     virtual void DispatchEvent(KeyboardEvent ev) = 0;
     virtual void DispatchEvent(MouseEvent ev) = 0;
     struct Flags {
         bool  background = false; 
-    } flags;
+    } __attribute__((packed)) flags;
     bool Contains(Point p) const;
 };
 

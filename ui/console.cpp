@@ -1,4 +1,7 @@
 #include "../core/info.hpp"
+#include "../core/scheduler.hpp"
+#include "../userland/timer.hpp"
+#include "status.hpp"
 #include "console.hpp"
 
 
@@ -11,6 +14,10 @@ Console::Widgets::Widgets():
         layout->Append(display.get(), 1);
         layout->Append(edit.get(), 0);
     }
+
+Console::State::State():
+    nextCommand(0),
+    runningCommands(Unique<List<CommandMapping>>(new List<CommandMapping>())) {}
 
 Console::Console(Point pos, Point size, String title, Options opts):
     BaseWindow(pos, size, title, opts),
@@ -56,24 +63,27 @@ void Console::DispatchContentEvent(MouseEvent ev) {
 }
 
 void Console::ExecuteCommand(String command) {
-    Number id = state->next_cmd_id;
-    state->next_cmd_id += 1;
-    ShowMessage(command, M_Input, id);
+    Number cmd = state->nextCommand;
+    state->nextCommand += 1;
+    ShowMessage(command, M_Input, cmd);
     if (command == "help") {
         ShowMessage (
             "scroll: C-p C-n C-b C-f\n"
-            "commands: help, meminfo",
-            M_Success, id
+            "commands: help, timer, meminfo",
+            M_Success, cmd
         );
+    } else if (command == "timer") {
+        auto p = Shared<Program>(new Userland::Timer());
+        Start(p, cmd);
     } else if (command == "meminfo") {
-        ShowMessage(GetMemoryInfo(), M_Output, id);
-        ShowMessage("exited", M_Success, id);
+        ShowMessage(GetMemoryInfo(), M_Output, cmd);
+        ShowMessage("exited", M_Success, cmd);
     } else {
-        ShowMessage("invalid command\n" "use 'help' to get usage info", M_Failure, id);
+        ShowMessage("invalid command\n" "use 'help' to get usage info", M_Failure, cmd);
     }
 }
 
-void Console::ShowMessage(String content, MessageType type, Number source_id) {
+void Console::ShowMessage(String content, MessageType type, Number cmd) {
     String type_desc =
         (type == M_Input)? "Input":
         (type == M_Output)? "Output":
@@ -87,9 +97,7 @@ void Console::ShowMessage(String content, MessageType type, Number source_id) {
         (type == M_Success)? Color(0x33, 0xCD, 0x33, 0xFF):
         (type == M_Failure)? Color(0xFF, 0x33, 0x33, 0xFF): Color(0, 0, 0, 0xFF);
     String::Builder buf;
-    buf.Write("[");
-    buf.Write(String(source_id));
-    buf.Write("] ");
+    buf.Write("["); buf.Write(String(cmd)); buf.Write("] ");
     buf.Write(type_desc);
     String title = buf.Collect();
     TextStyle title_style = TextStyle(type_color);
@@ -98,4 +106,65 @@ void Console::ShowMessage(String content, MessageType type, Number source_id) {
     widgets->display->Add(content, content_style);
     widgets->display->Add("\n", content_style);
 }
+
+void Console::Start(Shared<Program> p, Number cmd) {
+    Point pos = (geometry->position + Point(50, 50));
+    AbstractWindow* w = new TaskStatusWindow(pos, Point(300, 200), "task", Options());
+    AbstractConsole* c = this;
+    auto ctx = Unique<TaskContext>(new TaskContext);
+    ctx->window = w;
+    ctx->console = c;
+    ctx->consoleCommandNumber = cmd;
+    Scheduler::GetInstance()->Start(p, std::move(ctx));
+}
+
+bool Console::LookupTaskId(Number cmd, Number* task) {
+    for (auto it = state->runningCommands->Iterate(); it->HasCurrent(); it->Proceed()) {
+        auto mapping = it->Current();
+        if (mapping.cmd == cmd) {
+            *task = mapping.task;
+            return true;
+        }
+    }
+    return false;
+}
+
+void Console::TaskNotify(String content, MessageType type, Number cmd) {
+    String::Builder buf;
+    buf.Write("task"); 
+    Number task;
+    if (LookupTaskId(cmd, &task)) {
+        buf.Write(" "); buf.Write(String(task));
+    }
+    buf.Write(": ");
+    buf.Write(content);
+    String msg = buf.Collect();
+    ShowMessage(msg, type, cmd);
+}
+
+void Console::TaskNotifyStarted(Number cmd, Number task) {
+    State::CommandMapping mapping;
+    mapping.task = task;
+    mapping.cmd = cmd;
+    state->runningCommands->Append(mapping);
+    TaskNotify("started", M_Info, cmd);
+}
+
+void Console::TaskNotifyKilled(Number cmd) {
+    TaskNotify("killed", M_Failure, cmd);
+}
+
+void Console::TaskNotifyDone(Number cmd, bool ok, String msg) {
+    String::Builder buf;
+    buf.Write(ok? "done": "failed");
+    buf.Write("\n");
+    buf.Write(msg);
+    String wrapped_msg = buf.Collect();
+    TaskNotify(wrapped_msg, (ok? M_Success: M_Failure), cmd);
+}
+
+void Console::TaskPrintLog(Number cmd, String msg) {
+    TaskNotify(msg, M_Output, cmd);
+}
+
 

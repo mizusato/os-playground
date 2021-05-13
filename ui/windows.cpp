@@ -65,6 +65,7 @@ BaseWindow::BaseWindow(Point pos, Point size, String title, Options opts):
 void BaseWindow::GetContentArea(Point* start, Point* span) {
     Number b = opts->borderSize;
     Number t = opts->titleHeight;
+    Point size = geometry->size;
     start->X = b;
     start->Y = (t + b);
     span->X = (size.X - (2 * b));
@@ -74,6 +75,7 @@ void BaseWindow::GetContentArea(Point* start, Point* span) {
 void BaseWindow::Render(Canvas& target, bool active) {
     Number b = opts->borderSize;
     Number t = opts->titleHeight;
+    Point size = geometry->size;
     Color t_color = (active)? opts->titleColorActive: opts->titleColorInactive;
     target.FillRect(Point(b, (b + t)), (size - Point((2 * b), ((2 * b) + t))), opts->contentColor);
     target.FillRect(Point(0, 0), Point(size.X, b), opts->borderColor);
@@ -110,11 +112,11 @@ void BaseWindow::DispatchEvent(MouseEvent ev) {
             auto y = static_cast<SignedNumber>(ev.pos.Y);
             auto dx = (x - ref_x);
             auto dy = (y - ref_y);
-            auto new_x = (static_cast<SignedNumber>(position.X) + dx);
-            auto new_y = (static_cast<SignedNumber>(position.Y) + dy);
+            auto new_x = (static_cast<SignedNumber>(geometry->position.X) + dx);
+            auto new_y = (static_cast<SignedNumber>(geometry->position.Y) + dy);
             if (new_x < 0) { new_x = 0; }
             if (new_y < 0) { new_y = 0; }
-            position = Point(Number(new_x), Number(new_y));
+            geometry->position = Point(Number(new_x), Number(new_y));
         }
     } else {
         Number b = opts->borderSize;
@@ -123,11 +125,16 @@ void BaseWindow::DispatchEvent(MouseEvent ev) {
             state->dragging = true;
             state->dragPoint = ev.pos;
         } else {
+            // TODO: close button click handling
             Point start, span;
             GetContentArea(&start, &span);
             ev.pos = (ev.pos - start);
             DispatchContentEvent(ev);
         }
     }
+}
+
+void BaseWindow::ChangeTitle(String title) {
+    state->title = title;
 }
 
