@@ -14,8 +14,8 @@ namespace Scheduler {
     bool Cycle() {
         return instance->Cycle();
     }
-    void DispatchTimerEvent(TimerEvent ev) {
-        instance->DispatchEvent(ev);
+    bool DispatchTimerEvent(TimerEvent ev) {
+        return instance->DispatchEvent(ev);
     }
 };
 

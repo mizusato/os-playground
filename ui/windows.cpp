@@ -72,6 +72,16 @@ void BaseWindow::GetContentArea(Point* start, Point* span) {
     span->Y = (size.Y - t - (2 * b));
 }
 
+void BaseWindow::GetCloseButtonArea(Point* start, Point* span) {
+    Font* font = GetPrimaryFont();
+    Number b = opts->borderSize;
+    Number t = opts->titleHeight;
+    Number title_padding = ((t - font->Height()) / 2);
+    Number p = (b + title_padding);
+    *start = Point((geometry->size.X - (p + b) - font->Width()), p);
+    *span = Point(font->Width(), font->Height());
+}
+
 void BaseWindow::Render(Canvas& target, bool active) {
     Number b = opts->borderSize;
     Number t = opts->titleHeight;
@@ -122,10 +132,15 @@ void BaseWindow::DispatchEvent(MouseEvent ev) {
         Number b = opts->borderSize;
         Number t = opts->titleHeight;
         if (ev.down && (ev.alt || ev.pos.Y < (b + t))) {
-            state->dragging = true;
-            state->dragPoint = ev.pos;
+            Point start, span;
+            GetCloseButtonArea(&start, &span);
+            if (InArea(ev.pos, start, span)) {
+                HandleClose();
+            } else {
+                state->dragging = true;
+                state->dragPoint = ev.pos;
+            }
         } else {
-            // TODO: close button click handling
             Point start, span;
             GetContentArea(&start, &span);
             ev.pos = (ev.pos - start);

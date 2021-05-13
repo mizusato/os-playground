@@ -43,37 +43,39 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     Console::Open(Point(350, 100), Point(520, 320), "Console 0", opts);
     // First Rendering
     Cursor::SetPosition(Point((screenSize.X / 2), (screenSize.Y / 2)));
+    memoryMonitor.Update(Heap::GetStatus());
     RenderUI();
     // Event Loop
-    bool somethingExecuted, eventEmitted;
     while(true) {
-        somethingExecuted = Scheduler::Cycle();
-        eventEmitted = false;
+        bool somethingExecuted = Scheduler::Cycle();
+        bool significantEventEmitted = false;
         {
             TimerEvent ev;
             while (Events::Timer->Read(&ev)) {
-                eventEmitted = true;
-                Scheduler::DispatchTimerEvent(ev);
+                bool consumed = Scheduler::DispatchTimerEvent(ev);
+                if (consumed) {
+                    significantEventEmitted = true;
+                }
             }
         }
         {
             KeyboardEvent ev;
             while(Events::Keyboard->Read(&ev)) {
-                eventEmitted = true;
+                significantEventEmitted = true;
                 WindowManager::DispatchEvent(ev);
             }
         }
         {
             MouseEvent ev;
             while(Events::Mouse->Read(&ev)) {
-                eventEmitted = true;
+                significantEventEmitted = true;
                 bool ok = Cursor::UpdatePosition(ev, screenSize);
                 if ( !(ok) ) { continue; }
                 ev.pos = Cursor::GetPosition();
                 WindowManager::DispatchEvent(ev);
             }
         }
-        if (somethingExecuted || eventEmitted) {
+        if (somethingExecuted || significantEventEmitted) {
             memoryMonitor.Update(Heap::GetStatus());
             RenderUI();
         } else {

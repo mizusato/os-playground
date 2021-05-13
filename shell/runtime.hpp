@@ -111,7 +111,7 @@ public:
     Unique<TaskStatus> status;
     Unique<List<Shared<Continuation>>> runQueue;
     bool NothingToDo() const;
-    void ProcessEvent(TimerEvent ev);
+    bool ProcessEvent(TimerEvent ev);
     void ProcessEvent(KeyboardEvent ev);
     void ProcessEvent(MouseEvent ev);
     struct EventHandlers {
@@ -137,7 +137,7 @@ public:
     bool Kill(Number id);
     bool Kill(AbstractWindow *window);
     bool Cycle();
-    void DispatchEvent(TimerEvent ev);
+    bool DispatchEvent(TimerEvent ev);
     void DispatchEvent(KeyboardEvent ev, AbstractWindow* window);
     void DispatchEvent(MouseEvent ev, AbstractWindow* window);
 };

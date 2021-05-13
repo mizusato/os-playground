@@ -40,6 +40,7 @@ protected:
 public:
     virtual ~BaseWindow() {};
     void GetContentArea(Point* start, Point* span);
+    void GetCloseButtonArea(Point* start, Point* span);
     void Render(Canvas& target, bool active) override;
     void DispatchEvent(KeyboardEvent ev) override;
     void DispatchEvent(MouseEvent ev) override;

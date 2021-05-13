@@ -88,8 +88,8 @@ void Console::ShowMessage(String content, MessageType type, Number cmd) {
         (type == M_Input)? "Input":
         (type == M_Output)? "Output":
         (type == M_Info)? "Info":
-        (type == M_Success)? "OK":
-        (type == M_Failure)? "Failed": "";
+        (type == M_Success)? "Success":
+        (type == M_Failure)? "Failure": "";
     Color type_color = 
         (type == M_Input)? Color(0x55, 0x55, 0x55, 0xFF):
         (type == M_Output)? Color(0x55, 0x55, 0x55, 0xFF):

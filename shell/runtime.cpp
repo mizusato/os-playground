@@ -29,14 +29,17 @@ bool Task::NothingToDo() const {
     return (runQueue->Empty() && handlers->AllEmpty());
 }
 
-void Task::ProcessEvent(TimerEvent ev) {
+bool Task::ProcessEvent(TimerEvent ev) {
+    bool consumed = false;
     for (auto it = handlers->timerHandlers->Iterate(); it->HasCurrent(); it->Proceed()) {
         auto h = it->Current();
         auto k = h->HandleEvent(ev);
         if (k != nullptr) {
             QueueContinuation(k);
+            consumed = true;
         }
     }
+    return consumed;
 }
 
 void Task::ProcessEvent(KeyboardEvent ev) {
@@ -170,11 +173,13 @@ bool TaskScheduler::Cycle() {
     return somethingExecuted;
 }
 
-void TaskScheduler::DispatchEvent(TimerEvent ev) {
+bool TaskScheduler::DispatchEvent(TimerEvent ev) {
+    bool consumed = false;
     for (auto it = runningTasks->Iterate(); it->HasCurrent(); it->Proceed()) {
         auto task = it->Current();
-        task->ProcessEvent(ev);
+        consumed = task->ProcessEvent(ev);
     }
+    return consumed;
 }
 
 void TaskScheduler::DispatchEvent(KeyboardEvent ev, AbstractWindow* window) {
