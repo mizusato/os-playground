@@ -139,7 +139,10 @@ bool TaskScheduler::Kill(AbstractWindow *window) {
     return found;
 }
 
-bool TaskScheduler::Cycle() {
+void TaskScheduler::Cycle(CycleInfo* info) {
+    if (info == nullptr) {
+        panic("task-scheduler: cycle info pointer cannot be null");
+    }
     auto remaining = Unique<List<Shared<Task>>>(new List<Shared<Task>>());
     for (auto it = runningTasks->Iterate(); it->HasCurrent(); it->Proceed()) {
         auto task = it->Current();
@@ -158,9 +161,9 @@ bool TaskScheduler::Cycle() {
             remaining->Append(task);
         }
     }
-    bool tasksChanged = (remaining->Length() != runningTasks->Length());
+    info->tasksChanged = (remaining->Length() != runningTasks->Length());
     runningTasks = std::move(remaining);
-    bool somethingExecuted = tasksChanged;
+    bool somethingExecuted = false;
     for (auto it = runningTasks->Iterate(); it->HasCurrent(); it->Proceed()) {
         auto task = it->Current();
         if (task->runQueue->NotEmpty()) {
@@ -175,14 +178,14 @@ bool TaskScheduler::Cycle() {
             somethingExecuted = true;
         }
     }
-    return somethingExecuted;
+    info->somethingExecuted = somethingExecuted;
 }
 
 bool TaskScheduler::DispatchEvent(TimerEvent ev) {
     bool consumed = false;
     for (auto it = runningTasks->Iterate(); it->HasCurrent(); it->Proceed()) {
         auto task = it->Current();
-        consumed = task->ProcessEvent(ev);
+        consumed = (consumed || task->ProcessEvent(ev));
     }
     return consumed;
 }

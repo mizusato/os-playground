@@ -19,6 +19,8 @@
 #include "ui/ui.hpp"
 
 
+#define MAX_INTENSIVE_CYCLES 64
+
 extern "C"
 void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     static_cast<void>(static_cast<KernelEntryPoint>(Main));
@@ -47,10 +49,21 @@ void Main(MemoryInfo* memInfo, GraphicsInfo* gfxInfo) {
     log("initialized", LL_Info);
     RenderUI();
     // Event Loop
+    TaskScheduler::CycleInfo cycleInfo;
+    Number intensiveCycleCount = 0;
     while(true) {
-        bool somethingExecuted = Scheduler::Cycle();
         bool significantEventEmitted = ProcessEvents();
-        if (somethingExecuted || significantEventEmitted) {
+        Scheduler::Cycle(&cycleInfo);
+        bool somethingExecuted = cycleInfo.somethingExecuted;
+        bool tasksChanged = cycleInfo.tasksChanged;
+        intensiveCycleCount += 1;
+        if (somethingExecuted && !(tasksChanged) && !(significantEventEmitted)) {
+            if (intensiveCycleCount < MAX_INTENSIVE_CYCLES) {
+                continue;
+            }
+        }
+        intensiveCycleCount = 0;
+        if (somethingExecuted || tasksChanged || significantEventEmitted) {
             memoryMonitor.Update(Heap::GetStatus());
             RenderUI();
         } else {

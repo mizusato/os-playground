@@ -137,10 +137,14 @@ public:
     Number Start(Shared<Program> p, Unique<TaskContext> ctx);
     bool Kill(Number id, bool consoleDisposed = false);
     bool Kill(AbstractWindow *window);
-    bool Cycle();
     bool DispatchEvent(TimerEvent ev);
     void DispatchEvent(KeyboardEvent ev, AbstractWindow* window);
     void DispatchEvent(MouseEvent ev, AbstractWindow* window);
+    struct CycleInfo {
+        bool tasksChanged = false;
+        bool somethingExecuted = false;
+    };
+    void Cycle(CycleInfo* info);
 };
 
 #endif

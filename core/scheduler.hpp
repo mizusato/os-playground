@@ -6,7 +6,7 @@
 namespace Scheduler {
     void Init();
     TaskScheduler* GetInstance();
-    bool Cycle();
+    void Cycle(TaskScheduler::CycleInfo* info);
     bool DispatchTimerEvent(TimerEvent ev);
 };
 

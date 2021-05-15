@@ -105,7 +105,7 @@ void Console::ExecuteCommand(String command) {
         ShowMessage(GetMemoryInfo(), M_Output, cmd);
         ShowMessage("exited", M_Success, cmd);
     } else if (command == "countdown") {
-        auto p = Shared<Program>(new Userland::Countdown(1024));
+        auto p = Shared<Program>(new Userland::Countdown(32768));
         Start(p, cmd);
     } else if (command == "ticker") {
         auto p = Shared<Program>(new Userland::Ticker());

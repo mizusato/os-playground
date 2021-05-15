@@ -11,8 +11,8 @@ namespace Scheduler {
     TaskScheduler* GetInstance() {
         return instance;
     }
-    bool Cycle() {
-        return instance->Cycle();
+    void Cycle(TaskScheduler::CycleInfo* info) {
+        instance->Cycle(info);
     }
     bool DispatchTimerEvent(TimerEvent ev) {
         return instance->DispatchEvent(ev);
