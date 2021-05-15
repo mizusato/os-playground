@@ -36,7 +36,7 @@ public:
     void DispatchContentEvent(MouseEvent ev) override;
     void HandleClose() override;
     void ExecuteCommand(String command);
-    static void Open(Point pos, Point size, Options opts);
+    static void Open(Point pos, Options opts);
     enum MessageType {
         M_Input,
         M_Output,

@@ -47,8 +47,9 @@ void Console::Dispose() {
     }
 }
 
-void Console::Open(Point pos, Point size, Options opts) {
+void Console::Open(Point pos, Options opts) {
     String title = GetNextTitle();
+    Point size(520, 320);
     new Console(pos, size, title, opts);
 }
 
@@ -98,14 +99,13 @@ void Console::ExecuteCommand(String command) {
         Options new_opts = *opts;
         new_opts.closable = true;
         Point new_pos = (geometry->position + Point(50, 50));
-        Point new_size = geometry->size;
-        Open(new_pos, new_size, new_opts);
+        Open(new_pos, new_opts);
         ShowMessage("new console opened", M_Success, cmd);
     } else if (command == "meminfo") {
         ShowMessage(GetMemoryInfo(), M_Output, cmd);
         ShowMessage("exited", M_Success, cmd);
     } else if (command == "countdown") {
-        auto p = Shared<Program>(new Userland::Countdown(32768));
+        auto p = Shared<Program>(new Userland::Countdown(65536));
         Start(p, cmd);
     } else if (command == "ticker") {
         auto p = Shared<Program>(new Userland::Ticker());
