@@ -185,7 +185,8 @@ bool TaskScheduler::DispatchEvent(TimerEvent ev) {
     bool consumed = false;
     for (auto it = runningTasks->Iterate(); it->HasCurrent(); it->Proceed()) {
         auto task = it->Current();
-        consumed = (consumed || task->ProcessEvent(ev));
+        bool consumedByThis = task->ProcessEvent(ev);
+        consumed = (consumed || consumedByThis);
     }
     return consumed;
 }
