@@ -16,7 +16,7 @@ namespace Userland {
                 return Result(nullptr, nullptr);
             }
         };
-        class TimerHandler final: public TimerEventHandler {
+        class EventHandler final: public TimerEventHandler {
         private:
             Number current = 0;
         public:
@@ -34,7 +34,7 @@ namespace Userland {
         class Main final: public Continuation {
         public:
             Result Run(TaskContext& ctx, TaskStatus& status) override {
-                return Result(new ShowCount(0), new TimerHandler());
+                return Result(new ShowCount(0), new EventHandler());
             }
         };
     public:

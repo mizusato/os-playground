@@ -7,7 +7,7 @@ namespace WindowManager {
     MouseEvent prev_mouse_ev;
     void Init() {
         if (windows != nullptr) {
-            panic("WindowManager: already initialized");
+            panic("window-manager: already initialized");
         }
         windows = new List<Window*>();
         prev_mouse_ev = MouseEvent();

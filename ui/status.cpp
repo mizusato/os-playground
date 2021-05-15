@@ -52,13 +52,23 @@ void TaskStatusWindow::SetContent(String content) {
     SetText(content);
 }
 
+void TaskStatusWindow::DispatchContentEvent(KeyboardEvent ev) {
+    Scheduler::GetInstance()->DispatchEvent(ev, this);
+    StatusWindow::DispatchContentEvent(ev);
+}
+
+void TaskStatusWindow::DispatchContentEvent(MouseEvent ev) {
+    Scheduler::GetInstance()->DispatchEvent(ev, this);
+    BaseWindow::DispatchContentEvent(ev);
+}
+
 void TaskStatusWindow::HandleClose() {
     Scheduler::GetInstance()->Kill(this);
 }
 
 
 MemoryMonitor::MemoryMonitor(Point pos, Options opts):
-    StatusWindow(pos, Point(450, 90), "Memory Monitor", opts) {}
+    StatusWindow(pos, Point(450, 80), "Memory Monitor", opts) {}
 
 void MemoryMonitor::Update(HeapStatus status) {
     String::Builder buf;

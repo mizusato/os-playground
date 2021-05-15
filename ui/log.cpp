@@ -24,7 +24,7 @@ void LogViewer::Open(Point pos, Point size, String title, Options opts) {
         instance = new LogViewer(pos, size, title, opts);
         WindowManager::Add(instance);
     } else {
-        panic("LogViewer: already opened");
+        panic("log-viewer: already opened");
     }
 }
 

@@ -4,7 +4,7 @@ namespace Scheduler {
     TaskScheduler* instance = nullptr;
     void Init() {
         if (instance != nullptr) {
-            panic("Scheduler: already initialized");
+            panic("scheduler: already initialized");
         }
         instance = new TaskScheduler;
     }

@@ -1,7 +1,6 @@
 #include "../core/info.hpp"
 #include "../core/scheduler.hpp"
-#include "../userland/ticker.hpp"
-#include "../userland/countdown.hpp"
+#include "../userland/all.hpp"
 #include "status.hpp"
 #include "console.hpp"
 
@@ -31,11 +30,30 @@ Console::~Console() {
     WindowManager::Remove(this);
 }
 
-void Console::Open(Point pos, Point size, String title, Options opts) {
+Number Console::nextConsoleId = 0;
+
+String Console::GetNextTitle() {
+    String::Builder buf;
+    buf.Write("Console ");
+    buf.Write(String(nextConsoleId));
+    nextConsoleId += 1;
+    return buf.Collect();
+}
+
+void Console::Dispose() {
+    for (auto it = state->runningCommands->Iterate(); it->HasCurrent(); it->Proceed()) {
+        auto mapping = it->Current();
+        Scheduler::GetInstance()->Kill(mapping.task, true);
+    }
+}
+
+void Console::Open(Point pos, Point size, Options opts) {
+    String title = GetNextTitle();
     new Console(pos, size, title, opts);
 }
 
 void Console::HandleClose() {
+    Dispose();
     delete this;
 }
 
@@ -69,19 +87,35 @@ void Console::ExecuteCommand(String command) {
     ShowMessage(command, M_Input, cmd);
     if (command == "help") {
         ShowMessage (
-            "scroll: C-p C-n C-b C-f\n"
-            "commands: help, ticker, countdown, meminfo",
+            "<scroll>\n"
+            "C-p C-n C-b C-f\n"
+            "<commands>\n"
+            "help, cmd, meminfo, countdown,\n"
+            "ticker, keyboard, mouse",
             M_Success, cmd
         );
-    } else if (command == "ticker") {
-        auto p = Shared<Program>(new Userland::Ticker());
-        Start(p, cmd);
-    } else if (command == "countdown") {
-        auto p = Shared<Program>(new Userland::Countdown(1024));
-        Start(p, cmd);
+    } else if (command == "cmd") {
+        Options new_opts = *opts;
+        new_opts.closable = true;
+        Point new_pos = (geometry->position + Point(50, 50));
+        Point new_size = geometry->size;
+        Open(new_pos, new_size, new_opts);
+        ShowMessage("new console opened", M_Success, cmd);
     } else if (command == "meminfo") {
         ShowMessage(GetMemoryInfo(), M_Output, cmd);
         ShowMessage("exited", M_Success, cmd);
+    } else if (command == "countdown") {
+        auto p = Shared<Program>(new Userland::Countdown(1024));
+        Start(p, cmd);
+    } else if (command == "ticker") {
+        auto p = Shared<Program>(new Userland::Ticker());
+        Start(p, cmd);
+    } else if (command == "keyboard") {
+        auto p = Shared<Program>(new Userland::KeyboardInspector());
+        Start(p, cmd);
+    } else if (command == "mouse") {
+        auto p = Shared<Program>(new Userland::MouseInspector());
+        Start(p, cmd);
     } else {
         ShowMessage("invalid command\n" "use 'help' to get usage info", M_Failure, cmd);
     }

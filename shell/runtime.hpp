@@ -40,6 +40,7 @@ public:
 
 struct TaskStatus {
     bool killed;
+    bool consoleDisposed;
     bool exited;
     bool successful;
     String resultMessage;
@@ -134,7 +135,7 @@ public:
     TaskScheduler();
     ~TaskScheduler() {};
     Number Start(Shared<Program> p, Unique<TaskContext> ctx);
-    bool Kill(Number id);
+    bool Kill(Number id, bool consoleDisposed = false);
     bool Kill(AbstractWindow *window);
     bool Cycle();
     bool DispatchEvent(TimerEvent ev);

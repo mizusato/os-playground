@@ -115,25 +115,29 @@ public:
     }
     T Shift() {
         if (head == nullptr) {
-            panic("List: Shift() on an empty list");
+            panic("list: shift() on an empty list");
         }
+        length -= 1;
         ChunkData* data = reinterpret_cast<ChunkData*>(&(head->data));
         if (data->elementAmount == 1) {
             T first = data->Get(0);
             data->Unset(0);
+            Chunk* tail = head->previous;
             Chunk* next = head->next;
             Heap::Free(head, 1);
             if (numberOfChunks == 1) {
                 head = nullptr;
                 numberOfChunks = 0;
             } else {
-                if (numberOfChunks == 0) { panic("List: something went wrong"); }
+                if (numberOfChunks == 0) { panic("list: something went wrong"); }
                 head = next;
+                head->previous = tail;
+                tail->next = head;
                 numberOfChunks -= 1;
             }
             return first;
         } else {
-            if (data->elementAmount == 0) { panic("List: something went wrong"); }
+            if (data->elementAmount == 0) { panic("list: something went wrong"); }
             Number n = data->elementAmount;
             T first = data->Get(0);
             for (Number i = 0; (i + 1) < n; i += 1) {

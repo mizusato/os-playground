@@ -104,10 +104,10 @@ namespace Heap {
     }
     Chunk* Allocate(Number n) {
         if (n == 0) {
-            panic("Heap::Allocate(): invalid argument");
+            panic("heap::allocate(): invalid argument");
         }
         if (status.ChunksAvailable < (n + RESERVED_CHUNKS)) {
-            panic("Heap::Allocate(): out of memory");
+            panic("heap::allocate(): out of memory");
         }
         Chunk* head = free_list->next;
         Chunk* current = head;
@@ -124,7 +124,7 @@ namespace Heap {
     } 
     void Free(Chunk* head, Number n) {
         if (n == 0) {
-            panic("Heap::Free(): invalid argument");
+            panic("heap::free(): invalid argument");
         }
         Chunk* current = head;
         for (Number i = 1; i <= (n - 1); i += 1) {
@@ -139,7 +139,7 @@ namespace Heap {
     }
     void* RequestStatic(Number size) {
         if (size > status.StaticAvailable) {
-            panic("Heap::AllocateStatic(): static memory not enough");
+            panic("heap::allocate-static(): static memory not enough");
         }
         void* allocated = static_ptr;
         static_ptr += size;

@@ -59,7 +59,7 @@ void LinearLayout::Render(Canvas& target, bool window_active) {
         auto given = item.widget->size;
         if (item.factor == 0) {
             Number fixed = (horizontal? given.X: given.Y);
-            if (total < fixed) { panic("layout failure"); };
+            if (total < fixed) { panic("layout fault"); };
             total -= fixed; 
         }
         total_factor += item.factor;

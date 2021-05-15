@@ -3,6 +3,7 @@
 
 TaskStatus::TaskStatus():
     killed(false),
+    consoleDisposed(false),
     exited(false),
     successful(true),
     resultMessage("exited") {}
@@ -64,7 +65,7 @@ void Task::ProcessEvent(MouseEvent ev) {
 
 void Task::QueueContinuation(Continuation* k) {
     if (k == nullptr) {
-        panic("Task: cannot add a null continuation");
+        panic("task: cannot add a null continuation");
     }
     runQueue->Append(Shared<Continuation>(k));
 }
@@ -86,7 +87,7 @@ void Task::AttachEventHandler(EventHandler* handler) {
         handlers->mouseHandlers->Append(Shared<MouseEventHandler>(h));
         return;
     }
-    panic("Task: unknown event handler");
+    panic("task: unknown event handler");
 }
 
 
@@ -111,13 +112,14 @@ Number TaskScheduler::Start(Shared<Program> p, Unique<TaskContext> uniq_ctx) {
     return id;
 }
 
-bool TaskScheduler::Kill(Number id) {
+bool TaskScheduler::Kill(Number id, bool consoleDisposed) {
     bool found = false;
     for (auto it = runningTasks->Iterate(); it->HasCurrent(); it->Proceed()) {
         auto task = it->Current();
         if (task->id == id) {
             found = true;
             task->status->killed = true;
+            task->status->consoleDisposed = consoleDisposed;
             break;
         }
     }
@@ -143,7 +145,9 @@ bool TaskScheduler::Cycle() {
         auto task = it->Current();
         if (task->status->killed) {
             task->ctx->window->Destroy();
-            task->ctx->console->TaskNotifyKilled(task->ctx->consoleCommandNumber);
+            if ( !(task->status->consoleDisposed) ) {
+                task->ctx->console->TaskNotifyKilled(task->ctx->consoleCommandNumber);
+            }
         } else if (task->status->exited || task->NothingToDo()) {
             task->ctx->window->Destroy();
             Number cmd = task->ctx->consoleCommandNumber;

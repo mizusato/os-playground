@@ -20,7 +20,7 @@ public:
         buffer = reinterpret_cast<T*>(Heap::RequestStatic(FIFO_LENGTH * sizeof(T)));
     };
     ~FIFO() {
-        panic("a FIFO is a static object so that cannot be deleted");
+        panic("a fifo is a static object so that cannot be deleted");
     };
     bool Read(T* value) {
         Number current = head;

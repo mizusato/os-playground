@@ -26,6 +26,9 @@ private:
     };
     Unique<State> state;
     Console(Point pos, Point size, String title, Options opts);
+    static Number nextConsoleId;
+    static String GetNextTitle();
+    void Dispose();
 public:
     ~Console();
     void RenderContent(Canvas& target, bool active) override;
@@ -33,7 +36,7 @@ public:
     void DispatchContentEvent(MouseEvent ev) override;
     void HandleClose() override;
     void ExecuteCommand(String command);
-    static void Open(Point pos, Point size, String title, Options opts);
+    static void Open(Point pos, Point size, Options opts);
     enum MessageType {
         M_Input,
         M_Output,

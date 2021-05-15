@@ -143,8 +143,12 @@ void BaseWindow::DispatchEvent(MouseEvent ev) {
         } else {
             Point start, span;
             GetContentArea(&start, &span);
-            ev.pos = (ev.pos - start);
-            DispatchContentEvent(ev);
+            if (InArea(ev.pos, start, span)) {
+                ev.pos = (ev.pos - start);
+                DispatchContentEvent(ev);
+            } else {
+                // do nothing
+            }
         }
     }
 }
