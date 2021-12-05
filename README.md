@@ -1,4 +1,4 @@
-OS Playground
+OS Playground (Archived)
 ====
 
 This is an experimental OS-from-scratch project. Just for demonstration, not useful at all.
